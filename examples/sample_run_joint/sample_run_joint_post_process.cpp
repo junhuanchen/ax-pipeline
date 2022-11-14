@@ -23,94 +23,32 @@
 #include "fstream"
 
 #include "sample_run_joint.h"
-#include "detection.hpp"
-
-#include "../utilities/json.hpp"
 
 #include "joint.h"
 #include "../utilities/sample_log.h"
 
-float YOLOV5_PROB_THRESHOLD = 0.4f;
-float YOLOV5_NMS_THRESHOLD = 0.45f;
-int YOLOV5_CLASS_NUM = 80;
+#include "../common/sample_def.h"
 
-std::vector<float> YOLOV5_ANCHORS = {10, 13, 16, 30,
-                                     33, 23, 30, 61,
-                                     62, 45, 59, 119,
-                                     116, 90, 156, 198,
-                                     373, 326};
+#include "opencv2/opencv.hpp"
 
-std::vector<std::string> YOLOV5_CLASS_NAMES = {
-    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
-    "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
-    "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
-    "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
-    "tennis racket", "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
-    "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
-    "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone",
-    "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear",
-    "hair drier", "toothbrush"};
+#include "../sample_vin_ivps_joint_vo/sample_vin_ivps_joint_vo.h"
 
-template <typename T>
-void update_val(nlohmann::json &jsondata, const char *key, T *val)
-{
-    if (jsondata.contains(key))
-    {
-        *val = jsondata[key];
-    }
-}
-
-template <typename T>
-void update_val(nlohmann::json &jsondata, const char *key, std::vector<T> *val)
-{
-    if (jsondata.contains(key))
-    {
-        std::vector<T> tmp = jsondata[key];
-        *val = tmp;
-    }
-}
-
+#include "omp.h"
 int sample_parse_yolov5_param(char *json_file_path)
 {
-    std::ifstream f(json_file_path);
-    if (f.fail())
-    {
-        ALOGE("%s doesn`t exist,generate it by default param\n", json_file_path);
-        nlohmann::json json_data;
-        json_data["YOLOV5_PROB_THRESHOLD"] = YOLOV5_PROB_THRESHOLD;
-        json_data["YOLOV5_NMS_THRESHOLD"] = YOLOV5_NMS_THRESHOLD;
-        json_data["YOLOV5_CLASS_NUM"] = YOLOV5_CLASS_NUM;
-        json_data["YOLOV5_ANCHORS"] = YOLOV5_ANCHORS;
-        json_data["YOLOV5_CLASS_NAMES"] = YOLOV5_CLASS_NAMES;
-
-        std::string json_ctx = json_data.dump(4);
-        std::ofstream of(json_file_path);
-        of << json_ctx;
-        of.close();
-        return -1;
-    }
-
-    auto jsondata = nlohmann::json::parse(f);
-
-    update_val(jsondata, "YOLOV5_PROB_THRESHOLD", &YOLOV5_PROB_THRESHOLD);
-    update_val(jsondata, "YOLOV5_NMS_THRESHOLD", &YOLOV5_NMS_THRESHOLD);
-    update_val(jsondata, "YOLOV5_CLASS_NUM", &YOLOV5_CLASS_NUM);
-    update_val(jsondata, "YOLOV5_ANCHORS", &YOLOV5_ANCHORS);
-    update_val(jsondata, "YOLOV5_CLASS_NAMES", &YOLOV5_CLASS_NAMES);
-
-    if (YOLOV5_ANCHORS.size() != 18)
-    {
-        ALOGE("ANCHORS SIZE MUST BE 18\n");
-        return -1;
-    }
-
-    if (YOLOV5_CLASS_NUM != YOLOV5_CLASS_NAMES.size())
-    {
-        ALOGE("YOLOV5_CLASS_NUM != YOLOV5_CLASS_NAMES SIZE(%d:%d)\n", YOLOV5_CLASS_NUM, YOLOV5_CLASS_NAMES.size());
-        return -1;
-    }
     return 0;
 }
+
+// cv::Mat mask_result_2(480, 854, CV_8UC4);
+// cv::Mat mask_result_2(480, 854, CV_8UC4);
+// extern pthread_mutex_t g_result_mutex;
+// pthread_mutex_t *get_g_result_mutex();
+
+// extern "C" unsigned char *get_disp_data()
+// {
+//     return mask_result_2.data;
+// }
+
 /// @brief 模型后处理函数
 /// @param nOutputSize 输出的节点数
 /// @param pOutputsInfo 输出的节点对应的信息，包含维度信息、节点名称等
@@ -123,52 +61,91 @@ int sample_parse_yolov5_param(char *json_file_path)
 void sample_run_joint_post_process(AX_U32 nOutputSize, AX_JOINT_IOMETA_T *pOutputsInfo, AX_JOINT_IO_BUFFER_T *pOutputs, sample_run_joint_results *pResults,
                                    int SAMPLE_ALGO_WIDTH, int SAMPLE_ALGO_HEIGHT, int SAMPLE_MAJOR_STREAM_WIDTH, int SAMPLE_MAJOR_STREAM_HEIGHT)
 {
-    std::vector<detection::Object> proposals;
-    std::vector<detection::Object> objects;
 
-    float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / YOLOV5_PROB_THRESHOLD) - 1.0f);
-    for (uint32_t i = 0; i < nOutputSize; ++i)
+    #include "time.h"
+    #define CALC_FPS(tips)                                                                                         \
+        {                                                                                                          \
+            static int fcnt = 0;                                                                                   \
+            fcnt++;                                                                                                \
+            static struct timespec ts1, ts2;                                                                       \
+            clock_gettime(CLOCK_MONOTONIC, &ts2);                                                                  \
+            if ((ts2.tv_sec * 1000 + ts2.tv_nsec / 1000000) - (ts1.tv_sec * 1000 + ts1.tv_nsec / 1000000) >= 1000) \
+            {                                                                                                      \
+                printf("%s => H26X FPS:%d     \r\n", tips, fcnt);                                                  \
+                ts1 = ts2;                                                                                         \
+                fcnt = 0;                                                                                          \
+            }                                                                                                      \
+        }
+
+    CALC_FPS("sample_run_joint_post_process");
+
+    static cv::Mat output_mask(192, 192, CV_8UC1, cv::Scalar(0));
+
+    auto &output = pOutputsInfo[0];
+    auto &info = pOutputs[0];
+    auto ptr = ((float *)info.pVirAddr);
+    auto pixel_num = 192 * 192;
+    for (int j = 0; j != pixel_num; ++j)
     {
-        auto &output = pOutputsInfo[i];
-        auto &info = pOutputs[i];
-        auto ptr = (float *)info.pVirAddr;
-        int32_t stride = (1 << i) * 8;
-
-        if (output.pShape[3] == (YOLOV5_CLASS_NUM + 5) * 3)
-        {
-            generate_proposals_yolov5(stride, ptr, YOLOV5_PROB_THRESHOLD, proposals, SAMPLE_ALGO_WIDTH, SAMPLE_ALGO_HEIGHT, YOLOV5_ANCHORS.data(), prob_threshold_unsigmoid, YOLOV5_CLASS_NUM);
-        }
-        else if (YOLOV5_CLASS_NUM == 1 && output.pShape[3] == (YOLOV5_CLASS_NUM + 10 + 5) * 3)
-        {
-            generate_proposals_yolov5_face(stride, ptr, YOLOV5_PROB_THRESHOLD, proposals, SAMPLE_ALGO_WIDTH, SAMPLE_ALGO_HEIGHT, YOLOV5_ANCHORS.data(), prob_threshold_unsigmoid);
-        }
-        else
-        {
-            ALOGE("[YOLOV5] - (YOLOV5_CLASS_NUM + 5) * 3 should equal %d,but YOLOV5_CLASS_NUM got %d\n", output.pShape[3], YOLOV5_CLASS_NUM);
-            ALOGE("[YOLOV5_FACE] - (YOLOV5_CLASS_NUM + 10 + 5) * 3 should equal %d,but YOLOV5_CLASS_NUM got %d\n", output.pShape[3], YOLOV5_CLASS_NUM);
-            break;
-        }
+        output_mask.data[j] = (uint8_t)(ptr[j] < ptr[j + pixel_num]) ? 0 : 255;
     }
 
-    detection::get_out_bbox(proposals, objects, YOLOV5_NMS_THRESHOLD, SAMPLE_ALGO_HEIGHT, SAMPLE_ALGO_WIDTH, SAMPLE_MAJOR_STREAM_HEIGHT, SAMPLE_MAJOR_STREAM_WIDTH);
-    pResults->size = MIN(objects.size(), SAMPLE_MAX_BBOX_COUNT);
-    for (size_t i = 0; i < pResults->size; i++)
-    {
-        const detection::Object &obj = objects[i];
-        pResults->objects[i].x = obj.rect.x;
-        pResults->objects[i].y = obj.rect.y;
-        pResults->objects[i].w = obj.rect.width;
-        pResults->objects[i].h = obj.rect.height;
-        pResults->objects[i].label = obj.label;
-        pResults->objects[i].prob = obj.prob;
+    // quick
+    static cv::Mat tmp(SAMPLE_MINOR_STREAM_HEIGHT, SAMPLE_MINOR_STREAM_WIDTH, CV_8UC1);
+    cv::resize(output_mask, tmp, cv::Size(SAMPLE_MINOR_STREAM_WIDTH, SAMPLE_MINOR_STREAM_HEIGHT), 0, 0, cv::INTER_NEAREST);
+    // static cv::Mat mask_result(SAMPLE_MINOR_STREAM_HEIGHT, SAMPLE_MINOR_STREAM_WIDTH, CV_8UC4);
+    // cv::cvtColor(tmp, mask_result, cv::COLOR_GRAY2RGBA);
 
-        if (obj.label < YOLOV5_CLASS_NAMES.size())
-        {
-            strcpy(pResults->objects[i].objname, YOLOV5_CLASS_NAMES[obj.label].c_str());
-        }
-        else
-        {
-            strcpy(pResults->objects[i].objname, "unknown");
-        }
+    // use mask
+    static cv::Mat mask_img = cv::imread("./mask.png", cv::IMREAD_UNCHANGED);
+
+    static cv::Mat mask_result(SAMPLE_MINOR_STREAM_HEIGHT, SAMPLE_MINOR_STREAM_WIDTH, CV_8UC4);
+    memset(mask_result.data, 0, mask_result.size().width * mask_result.size().height * mask_result.channels());
+
+    mask_img.copyTo(mask_result, tmp);
+
+    extern AX_U32 OSD_Grp[SAMPLE_REGION_COUNT];
+
+    RGN_GROUP_CFG_T tRgnGroupConfig[SAMPLE_REGION_COUNT] = {
+        {OSD_Grp[0], 0x11, SAMPLE_MINOR_STREAM_WIDTH, SAMPLE_MINOR_STREAM_HEIGHT, 1, AX_IVPS_RGN_LAYER_COVER},
+    };
+
+    AX_S32 ret = 0;
+    AX_IVPS_RGN_DISP_GROUP_S tDisp;
+
+    // memcpy(abgr_data, get_disp_data(),SAMPLE_MINOR_STREAM_WIDTH*SAMPLE_MINOR_STREAM_HEIGHT*4);
+
+    memset(&tDisp, 0, sizeof(AX_IVPS_RGN_DISP_GROUP_S));
+
+    tDisp.nNum = tRgnGroupConfig[0].nRgnNum;
+    tDisp.tChnAttr.nAlpha = 1024;
+    tDisp.tChnAttr.eFormat = AX_FORMAT_ARGB8888;
+    tDisp.tChnAttr.nZindex = 1;
+    tDisp.tChnAttr.nBitColor.nColor = 0xFF0000;
+    tDisp.tChnAttr.nBitColor.bEnable = AX_FALSE;
+    tDisp.tChnAttr.nBitColor.nColorInv = 0xFF;
+    tDisp.tChnAttr.nBitColor.nColorInvThr = 0xA0A0A0;
+
+    tDisp.arrDisp[0].bShow = AX_TRUE;
+    tDisp.arrDisp[0].eType = AX_IVPS_RGN_TYPE_OSD;
+
+    tDisp.arrDisp[0].uDisp.tOSD.bEnable = AX_TRUE;
+    tDisp.arrDisp[0].uDisp.tOSD.enRgbFormat = AX_FORMAT_ARGB8888;
+    tDisp.arrDisp[0].uDisp.tOSD.u32Zindex = 1;
+    tDisp.arrDisp[0].uDisp.tOSD.u32ColorKey = 0x0;
+    tDisp.arrDisp[0].uDisp.tOSD.u32BgColorLo = 0xFFFFFFFF;
+    tDisp.arrDisp[0].uDisp.tOSD.u32BgColorHi = 0xFFFFFFFF;
+    tDisp.arrDisp[0].uDisp.tOSD.u32BmpWidth = tRgnGroupConfig[0].nChnWidth;
+    tDisp.arrDisp[0].uDisp.tOSD.u32BmpHeight = tRgnGroupConfig[0].nChnHeight;
+    tDisp.arrDisp[0].uDisp.tOSD.u32DstXoffset = 0;
+    tDisp.arrDisp[0].uDisp.tOSD.u32DstYoffset = 32;
+    tDisp.arrDisp[0].uDisp.tOSD.u64PhyAddr = 0;
+    tDisp.arrDisp[0].uDisp.tOSD.pBitmap = mask_result.data;
+
+    ret = AX_IVPS_RGN_Update(g_arrRgnThreadParam->hChnRgn, &tDisp);
+    if (0 != ret)
+    {
+        ALOGE("[%d][0x%02x] AX_IVPS_RGN_Update fail, ret=0x%x, hChnRgn=%d", g_arrRgnThreadParam->nGroupIdx, g_arrRgnThreadParam->nFilter, ret, g_arrRgnThreadParam->hChnRgn);
     }
+
 }

@@ -37,11 +37,10 @@ if (NOT BSP_MSP_DIR)
 endif ()
 message(STATUS "BSP_MSP_DIR = ${BSP_MSP_DIR}")
 
-add_subdirectory(examples/sample_vin_ivps_joint_venc_rtsp_vo_onvif_mp4v2)
 add_subdirectory(examples/sample_vin_ivps_joint_venc_rtsp_vo)
 add_subdirectory(examples/sample_vin_ivps_joint_venc_rtsp)
 add_subdirectory(examples/sample_vin_ivps_joint_vo)
-add_subdirectory(examples/sample_vin_joint)
+# add_subdirectory(examples/sample_vin_joint)
 
 file(GLOB SAMPLE_RUN_JOINT_CONFIG_FILES "${CMAKE_SOURCE_DIR}/examples/sample_run_joint/config/*")
 install (FILES ${SAMPLE_RUN_JOINT_CONFIG_FILES} DESTINATION bin/config)

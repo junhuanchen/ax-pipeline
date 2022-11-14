@@ -2,7 +2,7 @@ file(GLOB SRC_LIST "*.c" "pipe/*.c" "../utilities/*.cpp")
 file(GLOB SRC_LIST_COMMON "${BSP_MSP_DIR}/../sample/common/*.c" "${BSP_MSP_DIR}/../sample/common/common_codec/*.c" "${BSP_MSP_DIR}/../sample/common/vo/*.c")
 file(GLOB SRC_LIST_SAMPLE_RUN_JOINT "../sample_run_joint/*.cpp")
 
-add_executable(sample_vin_ivps_joint_vo 
+add_executable(sample_vin_ivps_joint_vo
                 ${SRC_LIST}
                 ${SRC_LIST_COMMON}
                 ${SRC_LIST_SAMPLE_RUN_JOINT}

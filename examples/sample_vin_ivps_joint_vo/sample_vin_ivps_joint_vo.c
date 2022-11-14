@@ -105,7 +105,7 @@ static COMMON_SYS_POOL_CFG_T gtSysCommPoolSingleOs08a20Hdr[] = {
 
 IVPS_REGION_PARAM_T g_arrRgnThreadParam[SAMPLE_REGION_COUNT];
 
-AX_S32 s_sample_framerate = 25;
+AX_S32 s_sample_framerate = 30;
 
 CAMERA_T gCams[MAX_CAMERAS] = {0};
 
@@ -132,7 +132,7 @@ AX_VOID StartOverlay(AX_VOID);
 AX_VOID StopOverlay(AX_VOID);
 // osd thread
 AX_VOID *RgnThreadFunc(AX_VOID *pArg);
-AX_VOID *RgnThreadFunc_V2(AX_VOID *pArg);
+// AX_VOID *RgnThreadFunc_V2(AX_VOID *pArg);
 
 /* ivps task */
 int SampleIvpsInit();
@@ -159,11 +159,11 @@ AX_S32 IVPS_ThreadStart(AX_VOID *p)
 
     pthread_detach(tid);
 
-    if (0 != pthread_create(&tid, NULL, RgnThreadFunc_V2, g_arrRgnThreadParam))
-    {
-        return -1;
-    }
-    pthread_detach(tid);
+    // if (0 != pthread_create(&tid, NULL, RgnThreadFunc_V2, g_arrRgnThreadParam))
+    // {
+    //     return -1;
+    // }
+    // pthread_detach(tid);
 
     return 0;
 }

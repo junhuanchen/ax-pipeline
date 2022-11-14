@@ -48,7 +48,7 @@ extern "C"
     /// @param algo_width 算法的输入宽
     /// @param algo_height 算法的输入高
     /// @param algo_colorformat 来自 AX_IMG_FORMAT_E ，AX_YUV420_SEMIPLANAR = 1 ，AX_FORMAT_RGB888 = 65 ， AX_FORMAT_BGR888 = 83
-    /// @return 
+    /// @return
     int sample_run_joint_init(char *model_file, void **handle, int *algo_width, int *algo_height, int *algo_colorformat);
     /// @brief 推理输入的图像，检测出bbox，并将映射到 src_width/src_height 上，以便 osd 绘制
     /// @param handle 算法handle
@@ -56,12 +56,12 @@ extern "C"
     /// @param src_width 需要映射的目标分辨率的宽
     /// @param src_height 需要映射的目标分辨率的高
     /// @param pResults 推理结果
-    /// @return 
+    /// @return
     int sample_run_joint_inference(void *handle, const void *pstFrame, int src_width, int src_height, sample_run_joint_results *pResults);
     int sample_run_joint_release(void *handle);
     /// @brief 通过 json 解析 yolov5 所需的参数，如果某些 key 置空，则不更新该参数
-    /// @param json_file_path 
-    /// @return 
+    /// @param json_file_path
+    /// @return
     int sample_parse_yolov5_param(char *json_file_path);
 #ifdef __cplusplus
 }

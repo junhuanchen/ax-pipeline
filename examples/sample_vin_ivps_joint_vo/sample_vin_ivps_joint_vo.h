@@ -48,4 +48,12 @@ extern IVPS_REGION_PARAM_T g_arrRgnThreadParam[SAMPLE_REGION_COUNT];
 
 #define SAMPLE_MINOR_STREAM_WIDTH 854
 #define SAMPLE_MINOR_STREAM_HEIGHT 480
+// #ifdef __cplusplus
+// extern "C"
+// {
+// #endif
+//     pthread_mutex_t *get_g_result_mutex();
+// #ifdef __cplusplus
+// }
+// #endif
 #endif

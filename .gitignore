@@ -35,3 +35,5 @@
 3rdparty
 build
 .vscode
+gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf
+gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz

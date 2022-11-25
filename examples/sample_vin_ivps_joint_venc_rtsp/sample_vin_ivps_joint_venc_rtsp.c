@@ -229,7 +229,8 @@ static AX_S32 SysRun()
     return 0;
 }
 
-static AX_VOID __sigint(int iSigNo)
+//允许外部调用
+AX_VOID __sigExit(int iSigNo)
 {
     // ALOGN("Catch signal %d!\n", iSigNo);
     gLoopExit = 1;
@@ -272,7 +273,7 @@ int main(int argc, char *argv[])
     SAMPLE_SNS_TYPE_E eSnsType = GALAXYCORE_GC4653;
     COMMON_VENC_CASE_E eVencType = VENC_CASE_H264;
     signal(SIGPIPE, SIG_IGN);
-    signal(SIGINT, __sigint);
+    signal(SIGINT, __sigExit);
 
     ALOGN("sample begin\n\n");
 

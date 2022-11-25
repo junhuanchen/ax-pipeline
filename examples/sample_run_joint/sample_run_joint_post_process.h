@@ -48,6 +48,12 @@ typedef struct _sample_run_joint_point
     float x, y;
 } sample_run_joint_point;
 
+typedef struct _sample_run_joint_mat
+{
+    int w, h;
+    unsigned char *data;
+} sample_run_joint_mat;
+
 typedef struct _sample_run_joint_object
 {
     sample_run_joint_bbox bbox;
@@ -61,8 +67,7 @@ typedef struct _sample_run_joint_object
     sample_run_joint_point pose_landmark[SAMPLE_RUN_JOINT_POSE_LMK_SIZE];
 
     int bHaseMask;
-
-    void *mYolov5Mask; // cv::Mat
+    sample_run_joint_mat mYolov5Mask; // cv::Mat
 
     int label;
     float prob;

@@ -260,7 +260,9 @@ void sample_run_joint_post_process_yolov5_seg(SAMPLE_RUN_JOINT_MODEL_TYPE modelt
         {
             cv::Mat &mask = mSimpleRingBuffer.next();
             mask = obj.mask;
-            pResults->mObjects[i].mYolov5Mask = &mask;
+            pResults->mObjects[i].mYolov5Mask.data = mask.data;
+            pResults->mObjects[i].mYolov5Mask.w = mask.cols;
+            pResults->mObjects[i].mYolov5Mask.h = mask.rows;
         }
 
         if (obj.label < CLASS_NAMES.size())

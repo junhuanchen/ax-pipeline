@@ -121,7 +121,7 @@ static inline void draw_pose_result(cv::Mat &img, sample_run_joint_object *pObj,
         int x1 = (int)(pObj->pose_landmark[element.connection[0]].x * img.cols) + offset_x;
         int y1 = (int)(pObj->pose_landmark[element.connection[0]].y * img.rows) + offset_y;
         int x2 = (int)(pObj->pose_landmark[element.connection[1]].x * img.cols) + offset_x;
-        int y2 = (int)(pObj->pose_landmark[element.connection[1]].y* img.rows) + offset_y;
+        int y2 = (int)(pObj->pose_landmark[element.connection[1]].y * img.rows) + offset_y;
 
         x1 = std::max(std::min(x1, (img.cols - 1)), 0);
         y1 = std::max(std::min(y1, (img.rows - 1)), 0);
@@ -180,16 +180,16 @@ void drawResults(osd_utils_img *out, float fontscale, int thickness, sample_run_
             // draw_pose_result(image, &results->mObjects[i], SAMPLE_RUN_JOINT_POSE_LMK_SIZE, 192, 256);
         }
 
-        if (results->mObjects[i].bHaseMask && results->mObjects[i].mYolov5Mask)
+        if (results->mObjects[i].bHaseMask && results->mObjects[i].mYolov5Mask.data)
         {
             static const std::vector<std::vector<uint8_t>> COCO_COLORS = {
                 {128, 56, 0, 255}, {128, 226, 255, 0}, {128, 0, 94, 255}, {128, 0, 37, 255}, {128, 0, 255, 94}, {128, 255, 226, 0}, {128, 0, 18, 255}, {128, 255, 151, 0}, {128, 170, 0, 255}, {128, 0, 255, 56}, {128, 255, 0, 75}, {128, 0, 75, 255}, {128, 0, 255, 169}, {128, 255, 0, 207}, {128, 75, 255, 0}, {128, 207, 0, 255}, {128, 37, 0, 255}, {128, 0, 207, 255}, {128, 94, 0, 255}, {128, 0, 255, 113}, {128, 255, 18, 0}, {128, 255, 0, 56}, {128, 18, 0, 255}, {128, 0, 255, 226}, {128, 170, 255, 0}, {128, 255, 0, 245}, {128, 151, 255, 0}, {128, 132, 255, 0}, {128, 75, 0, 255}, {128, 151, 0, 255}, {128, 0, 151, 255}, {128, 132, 0, 255}, {128, 0, 255, 245}, {128, 255, 132, 0}, {128, 226, 0, 255}, {128, 255, 37, 0}, {128, 207, 255, 0}, {128, 0, 255, 207}, {128, 94, 255, 0}, {128, 0, 226, 255}, {128, 56, 255, 0}, {128, 255, 94, 0}, {128, 255, 113, 0}, {128, 0, 132, 255}, {128, 255, 0, 132}, {128, 255, 170, 0}, {128, 255, 0, 188}, {128, 113, 255, 0}, {128, 245, 0, 255}, {128, 113, 0, 255}, {128, 255, 188, 0}, {128, 0, 113, 255}, {128, 255, 0, 0}, {128, 0, 56, 255}, {128, 255, 0, 113}, {128, 0, 255, 188}, {128, 255, 0, 94}, {128, 255, 0, 18}, {128, 18, 255, 0}, {128, 0, 255, 132}, {128, 0, 188, 255}, {128, 0, 245, 255}, {128, 0, 169, 255}, {128, 37, 255, 0}, {128, 255, 0, 151}, {128, 188, 0, 255}, {128, 0, 255, 37}, {128, 0, 255, 0}, {128, 255, 0, 170}, {128, 255, 0, 37}, {128, 255, 75, 0}, {128, 0, 0, 255}, {128, 255, 207, 0}, {128, 255, 0, 226}, {128, 255, 245, 0}, {128, 188, 255, 0}, {128, 0, 255, 18}, {128, 0, 255, 75}, {128, 0, 255, 151}, {128, 255, 56, 0}, {128, 245, 255, 0}};
-            cv::Mat *mask = (cv::Mat *)results->mObjects[i].mYolov5Mask;
-            if (!mask->empty())
+            cv::Mat mask(results->mObjects[i].mYolov5Mask.h, results->mObjects[i].mYolov5Mask.w, CV_8U, results->mObjects[i].mYolov5Mask.data);
+            if (!mask.empty())
             {
                 cv::Mat mask_target;
 
-                cv::resize(*mask, mask_target, cv::Size(results->mObjects[i].bbox.w * out->width, results->mObjects[i].bbox.h * out->height));
+                cv::resize(mask, mask_target, cv::Size(results->mObjects[i].bbox.w * out->width, results->mObjects[i].bbox.h * out->height));
 
                 if (results->mObjects[i].label < COCO_COLORS.size())
                 {
@@ -205,10 +205,10 @@ void drawResults(osd_utils_img *out, float fontscale, int thickness, sample_run_
 
     if (results->bPPHumSeg)
     {
-        static cv::Mat base(SAMPLE_MAJOR_STREAM_HEIGHT,SAMPLE_MAJOR_STREAM_WIDTH,CV_8UC1);
-        cv::Mat tmp(image.rows,image.cols,CV_8UC1,base.data);
-        cv::Mat mask(192,192,CV_8UC1,results->mPPHumSeg.mask);
-        cv::resize(mask,tmp,cv::Size(image.cols,image.rows));
+        static cv::Mat base(SAMPLE_MAJOR_STREAM_HEIGHT, SAMPLE_MAJOR_STREAM_WIDTH, CV_8UC1);
+        cv::Mat tmp(image.rows, image.cols, CV_8UC1, base.data);
+        cv::Mat mask(192, 192, CV_8UC1, results->mPPHumSeg.mask);
+        cv::resize(mask, tmp, cv::Size(image.cols, image.rows));
         image.setTo(cv::Scalar(128, 0, 0, 128), tmp);
     }
 }
@@ -217,10 +217,10 @@ int freeObjs(sample_run_joint_results *results)
 {
     for (size_t i = 0; i < results->nObjSize; i++)
     {
-        if (results->mObjects[i].bHaseMask && results->mObjects[i].mYolov5Mask)
+        if (results->mObjects[i].bHaseMask && results->mObjects[i].mYolov5Mask.data)
         {
-            cv::Mat *mask = (cv::Mat *)results->mObjects[i].mYolov5Mask;
-            results->mObjects[i].mYolov5Mask = nullptr;
+            // cv::Mat *mask = (cv::Mat *)results->mObjects[i].mYolov5Mask;
+            results->mObjects[i].mYolov5Mask.data = nullptr;
         }
     }
 }

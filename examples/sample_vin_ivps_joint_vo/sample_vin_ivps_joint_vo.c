@@ -229,7 +229,8 @@ static AX_S32 SysRun()
     return 0;
 }
 
-static AX_VOID __sigint(int iSigNo)
+//允许外部调用
+AX_VOID __sigExit(int iSigNo)
 {
     // ALOGN("Catch signal %d!\n", iSigNo);
     gLoopExit = 1;
@@ -267,7 +268,7 @@ int main(int argc, char *argv[])
     AX_SNS_HDR_MODE_E eHdrMode = AX_SNS_LINEAR_MODE;
     SAMPLE_SNS_TYPE_E eSnsType = GALAXYCORE_GC4653;
     signal(SIGPIPE, SIG_IGN);
-    signal(SIGINT, __sigint);
+    signal(SIGINT, __sigExit);
 
     ALOGN("sample begin\n\n");
 
@@ -617,3 +618,4 @@ EXIT_1:
     ALOGN("sample end\n");
     return 0;
 }
+

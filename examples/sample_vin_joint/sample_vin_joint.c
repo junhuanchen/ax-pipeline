@@ -365,14 +365,13 @@ AX_VOID PrintHelp()
     printf("\t\t2: HDR 2DOL\n");
 }
 
-static AX_VOID __sigint(int iSigNo)
+//允许外部调用
+AX_VOID __sigExit(int iSigNo)
 {
-    // ALOGN("Catch signal %d\n", iSigNo);
+    // ALOGN("Catch signal %d!\n", iSigNo);
     gLoopExit = 1;
-
     return;
 }
-
 int main(int argc, char *argv[])
 {
     int c;
@@ -384,7 +383,7 @@ int main(int argc, char *argv[])
     AX_S32 s32Ret = 0;
 
     signal(SIGPIPE, SIG_IGN);
-    signal(SIGINT, __sigint);
+    signal(SIGINT, __sigExit);
 
     if (argc < 2)
     {

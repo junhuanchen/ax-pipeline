@@ -374,6 +374,13 @@ AX_VOID __sigExit(int iSigNo)
 }
 int main(int argc, char *argv[])
 {
+    gLoopExit = 0;
+    g_isp_force_loop_exit = 0;
+    memset(&gModels,0,sizeof(gModels));
+    memset(&g_result_disp,0,sizeof(g_result_disp));
+    memset(&gCams,0,sizeof(gCams));
+    optind = 0;
+
     int c;
     int isExit = 0, i;
     COMMON_SYS_CASE_E eSysCase = SYS_CASE_NONE;

@@ -265,6 +265,13 @@ static AX_VOID PrintHelp(char *testApp)
 
 int main(int argc, char *argv[])
 {
+    gLoopExit = 0;
+    g_isp_force_loop_exit = 0;
+    memset(&gModels,0,sizeof(gModels));
+    memset(&g_result_disp,0,sizeof(g_result_disp));
+    memset(&gCams,0,sizeof(gCams));
+    optind = 0;
+
     AX_S32 isExit = 0, i, ch;
     AX_S32 s32Ret = 0;
     COMMON_SYS_CASE_E eSysCase = SYS_CASE_SINGLE_GC4653;

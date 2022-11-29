@@ -26,6 +26,7 @@ static std::map<std::string, int> ModelTypeTable = {
     {"MT_INSEG_YOLOV5_MASK", MT_INSEG_YOLOV5_MASK},
     {"MT_MLM_HUMAN_POSE_AXPPL", MT_MLM_HUMAN_POSE_AXPPL},
     {"MT_MLM_HUMAN_POSE_HRNET", MT_MLM_HUMAN_POSE_HRNET},
+    {"MT_MLM_ANIMAL_POSE_HRNET", MT_MLM_ANIMAL_POSE_HRNET},
     {"MT_MLM_HAND_POSE", MT_MLM_HAND_POSE},
     {"MT_DET_YOLOX_PPL", MT_DET_YOLOX_PPL},
     {"MT_DET_PALM_HAND", MT_DET_PALM_HAND},
@@ -105,6 +106,7 @@ int sample_run_joint_parse_param(char *json_file_path, sample_run_joint_models *
         break;
     case MT_MLM_HUMAN_POSE_AXPPL:
     case MT_MLM_HUMAN_POSE_HRNET:
+    case MT_MLM_ANIMAL_POSE_HRNET:
     case MT_MLM_HAND_POSE:
         if (jsondata.contains("MODEL_MAJOR"))
         {
@@ -228,6 +230,58 @@ int _sample_run_joint_inference_human_pose(sample_run_joint_models *pModels, con
         if (pResults->mObjects[i].bHasBodyLmk)
         {
             for (int j = 0; j < SAMPLE_RUN_JOINT_BODY_LMK_SIZE; j++)
+            {
+                pResults->mObjects[idx].landmark[j].x /= pModels->SAMPLE_RESTORE_WIDTH;
+                pResults->mObjects[idx].landmark[j].y /= pModels->SAMPLE_RESTORE_HEIGHT;
+            }
+        }
+    }
+    return ret;
+}
+
+int _sample_run_joint_inference_animal_pose(sample_run_joint_models *pModels, const void *pstFrame, sample_run_joint_results *pResults)
+{
+    int ret = sample_run_joint_inference(pModels->mMajor.JointHandle, pstFrame, NULL);
+    sample_run_joint_post_process_det_single_func(pResults, pModels);
+
+    sample_run_joint_object HumObj = {0};
+    int idx = -1;
+    AX_BOOL bHasHuman = AX_FALSE;
+    for (size_t i = 0; i < pResults->nObjSize; i++)
+    {
+        if (pResults->mObjects[i].label == 16)
+        {
+            if (pResults->mObjects[i].bbox.w * pResults->mObjects[i].bbox.h > HumObj.bbox.w * HumObj.bbox.h)
+            {
+                HumObj.bbox.x = std::max(pResults->mObjects[i].bbox.x, 1.f);
+                HumObj.bbox.y = std::max(pResults->mObjects[i].bbox.y, 1.f);
+                HumObj.bbox.w = std::min(pResults->mObjects[i].bbox.w, pModels->SAMPLE_RESTORE_WIDTH - HumObj.bbox.x - 1);
+                HumObj.bbox.h = std::min(pResults->mObjects[i].bbox.h, pModels->SAMPLE_RESTORE_HEIGHT - HumObj.bbox.y - 1);
+                bHasHuman = AX_TRUE;
+                idx = i;
+            }
+        }
+    }
+
+    if (bHasHuman == AX_TRUE && pModels->mMinor.JointHandle && HumObj.bbox.w > 0 && HumObj.bbox.h > 0)
+    {
+        ret = sample_run_joint_inference(pModels->mMinor.JointHandle, pstFrame, &HumObj.bbox);
+        sample_run_joint_post_process_pose(pModels, &HumObj);
+        pResults->nObjSize = 1;
+        pResults->mObjects[0].bHasAnimalLMK = 1;
+        memcpy(&pResults->mObjects[0].landmark[0], &HumObj.landmark[0], sizeof(HumObj.landmark));
+    }
+
+    for (int i = 0; i < pResults->nObjSize; i++)
+    {
+        pResults->mObjects[i].bbox.x /= pModels->SAMPLE_RESTORE_WIDTH;
+        pResults->mObjects[i].bbox.y /= pModels->SAMPLE_RESTORE_HEIGHT;
+        pResults->mObjects[i].bbox.w /= pModels->SAMPLE_RESTORE_WIDTH;
+        pResults->mObjects[i].bbox.h /= pModels->SAMPLE_RESTORE_HEIGHT;
+
+        if (pResults->mObjects[i].bHasAnimalLMK)
+        {
+            for (int j = 0; j < SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE; j++)
             {
                 pResults->mObjects[idx].landmark[j].x /= pModels->SAMPLE_RESTORE_WIDTH;
                 pResults->mObjects[idx].landmark[j].y /= pModels->SAMPLE_RESTORE_HEIGHT;
@@ -366,6 +420,7 @@ int sample_run_joint_inference_single_func(sample_run_joint_models *pModels, con
         {MT_SEG_PPHUMSEG, _sample_run_joint_inference_pphumseg},
 
         {MT_MLM_HUMAN_POSE_HRNET, _sample_run_joint_inference_human_pose},
+        {MT_MLM_ANIMAL_POSE_HRNET, _sample_run_joint_inference_animal_pose},
         {MT_MLM_HUMAN_POSE_AXPPL, _sample_run_joint_inference_human_pose},
 
         {MT_MLM_HAND_POSE, _sample_run_joint_inference_handpose},

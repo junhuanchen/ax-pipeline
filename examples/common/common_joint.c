@@ -20,6 +20,7 @@ int COMMON_JOINT_Init()
         {
         case MT_MLM_HUMAN_POSE_AXPPL:
         case MT_MLM_HUMAN_POSE_HRNET:
+        case MT_MLM_ANIMAL_POSE_HRNET:
         case MT_MLM_HAND_POSE:
         case MT_MLM_FACE_RECOGNITION:
         case MT_MLM_VEHICLE_LICENSE_RECOGNITION:
@@ -41,6 +42,7 @@ int COMMON_JOINT_Init()
         {
         case MT_MLM_HUMAN_POSE_AXPPL:
         case MT_MLM_HUMAN_POSE_HRNET:
+        case MT_MLM_ANIMAL_POSE_HRNET:
         case MT_MLM_HAND_POSE:
         case MT_MLM_FACE_RECOGNITION:
         case MT_MLM_VEHICLE_LICENSE_RECOGNITION:

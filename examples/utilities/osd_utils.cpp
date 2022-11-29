@@ -199,6 +199,31 @@ void drawResults(osd_utils_img *out, float fontscale, int thickness, sample_run_
             draw_pose_result(image, &results->mObjects[i], pairs, SAMPLE_RUN_JOINT_BODY_LMK_SIZE, offset_x, offset_y);
         }
 
+        if (results->mObjects[i].bHasAnimalLMK)
+        {
+            static std::vector<pose::skeleton> pairs = {{19, 15, 0},
+                                                        {18, 14, 0},
+                                                        {17, 13, 0},
+                                                        {16, 12, 0},
+                                                        {15, 11, 0},
+                                                        {14, 10, 0},
+                                                        {13, 9, 0},
+                                                        {12, 8, 0},
+                                                        {11, 6, 0},
+                                                        {10, 6, 0},
+                                                        {9, 7, 0},
+                                                        {8, 7, 0},
+                                                        {6, 7, 0},
+                                                        {7, 5, 0},
+                                                        {5, 4, 0},
+                                                        {0, 2, 0},
+                                                        {1, 3, 0},
+                                                        {0, 1, 0},
+                                                        {0, 4, 0},
+                                                        {1, 4, 0}};
+            draw_pose_result(image, &results->mObjects[i], pairs, SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE, offset_x, offset_y);
+        }
+
         if (results->mObjects[i].bHasFaceLmk)
         {
             for (size_t j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)

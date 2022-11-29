@@ -33,6 +33,7 @@ typedef enum __SAMPLE_RUN_JOINT_MODEL_TYPE
     MT_MLM = 0x40,
     MT_MLM_HUMAN_POSE_AXPPL,
     MT_MLM_HUMAN_POSE_HRNET,
+    MT_MLM_ANIMAL_POSE_HRNET,
     MT_MLM_HAND_POSE,
     MT_MLM_FACE_RECOGNITION,
     MT_MLM_VEHICLE_LICENSE_RECOGNITION,
@@ -65,8 +66,10 @@ typedef struct _sample_run_joint_object
     char bHasFaceLmk;
     char bHasBodyLmk;
     char bHasHandLmk;
+    char bHasAnimalLMK;
 #define SAMPLE_RUN_JOINT_FACE_LMK_SIZE 5
 #define SAMPLE_RUN_JOINT_BODY_LMK_SIZE 17
+#define SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE 20
 #define SAMPLE_RUN_JOINT_HAND_LMK_SIZE 21
 #define SAMPLE_RUN_JOINT_MAX_LMK_SIZE SAMPLE_RUN_JOINT_HAND_LMK_SIZE
     sample_run_joint_point landmark[SAMPLE_RUN_JOINT_MAX_LMK_SIZE];

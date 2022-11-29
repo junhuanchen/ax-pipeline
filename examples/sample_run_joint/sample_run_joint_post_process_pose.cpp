@@ -59,6 +59,18 @@ void sample_run_joint_post_process_pose(sample_run_joint_models *pModels, sample
         }
     }
     break;
+    case MT_MLM_ANIMAL_POSE_HRNET:
+    {
+        auto ptr = (float *)pJointAttr->pOutputs[0].pVirAddr;
+        pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE, pJointAttr->algo_height, pJointAttr->algo_width);
+        pObj->bHasAnimalLMK = 1;
+        for (size_t i = 0; i < SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE; i++)
+        {
+            pObj->landmark[i].x = (ai_point_result.keypoints[i].x - tmp_w) * ratio_x + pObj->bbox.x;
+            pObj->landmark[i].y = (ai_point_result.keypoints[i].y - tmp_h) * ratio_y + pObj->bbox.y;
+        }
+    }
+    break;
     case MT_MLM_HAND_POSE:
     {
         auto &info_point = pJointAttr->pOutputs[0];

@@ -83,7 +83,12 @@ AX_S32 IVPS_ThreadStart(AX_VOID *p)
 {
     pthread_t tid = 0;
 
-    if (0 != pthread_create(&tid, NULL, GetFrameThread, p))
+    pthread_attr_t attr;
+    int ret = pthread_attr_init(&attr);
+    static uint8_t stack_getframe[64 * 1024]; // stack < 64k will Segmentation fault
+    pthread_attr_setstack(&attr, stack_getframe, sizeof(stack_getframe));
+    if (0 != pthread_create(&tid, &attr, (void *(*)(void *))GetFrameThread, p))
+    // if (0 != pthread_create(&tid, NULL, GetFrameThread, p))
     {
         return -1;
     }

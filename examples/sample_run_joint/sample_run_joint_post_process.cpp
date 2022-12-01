@@ -361,16 +361,20 @@ int _sample_run_joint_inference_animal_pose(sample_run_joint_models *pModels, co
     AX_BOOL bHasHuman = AX_FALSE;
     for (size_t i = 0; i < pResults->nObjSize; i++)
     {
-        if (pResults->mObjects[i].label == 16)
+        for(int j = 0; pModels->MINOR_CLASS_IDS[j] && j < SAMPLE_CLASS_ID_COUNT; j++)
         {
-            if (pResults->mObjects[i].bbox.w * pResults->mObjects[i].bbox.h > HumObj.bbox.w * HumObj.bbox.h)
+            if (pResults->mObjects[i].label == pModels->MINOR_CLASS_IDS[j])
             {
-                HumObj.bbox.x = std::max(pResults->mObjects[i].bbox.x, 1.f);
-                HumObj.bbox.y = std::max(pResults->mObjects[i].bbox.y, 1.f);
-                HumObj.bbox.w = std::min(pResults->mObjects[i].bbox.w, pModels->SAMPLE_RESTORE_WIDTH - HumObj.bbox.x - 1);
-                HumObj.bbox.h = std::min(pResults->mObjects[i].bbox.h, pModels->SAMPLE_RESTORE_HEIGHT - HumObj.bbox.y - 1);
-                bHasHuman = AX_TRUE;
-                idx = i;
+                if (pResults->mObjects[i].bbox.w * pResults->mObjects[i].bbox.h > HumObj.bbox.w * HumObj.bbox.h)
+                {
+                    HumObj.bbox.x = std::max(pResults->mObjects[i].bbox.x, 1.f);
+                    HumObj.bbox.y = std::max(pResults->mObjects[i].bbox.y, 1.f);
+                    HumObj.bbox.w = std::min(pResults->mObjects[i].bbox.w, pModels->SAMPLE_RESTORE_WIDTH - HumObj.bbox.x - 1);
+                    HumObj.bbox.h = std::min(pResults->mObjects[i].bbox.h, pModels->SAMPLE_RESTORE_HEIGHT - HumObj.bbox.y - 1);
+                    bHasHuman = AX_TRUE;
+                    idx = i;
+                    break; // pResults->nObjSize = 1;
+                }
             }
         }
     }

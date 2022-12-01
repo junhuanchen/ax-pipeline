@@ -4,6 +4,14 @@
     "SAMPLE_IVPS_ALGO_HEIGHT": 540,
     "MODEL_PATH": "./models/yolov5s_sub_nv12_11.joint",
     "MODEL_MINOR": {
+        "NUM_MINOR_CLASS_ID" : 5,
+        "CLASS_ID": [
+            15,
+            16,
+            17,
+            18,
+            19
+        ],
         "MODEL_PATH": "./models/hrnet_animal_pose_nv12.joint"
     },
     "MODEL_MAJOR": {

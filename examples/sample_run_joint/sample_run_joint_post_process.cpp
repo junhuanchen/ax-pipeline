@@ -216,7 +216,7 @@ int _sample_run_joint_inference_human_pose(sample_run_joint_models *pModels, con
         ret = sample_run_joint_inference(pModels->mMinor.JointHandle, pstFrame, &HumObj.bbox);
         sample_run_joint_post_process_pose(pModels, &HumObj);
         pResults->nObjSize = 1;
-        pResults->mObjects[0].bHasBodyLmk = 1;
+        pResults->mObjects[0].bHasLandmark = SAMPLE_RUN_JOINT_BODY_LMK_SIZE;
         memcpy(&pResults->mObjects[0].landmark[0], &HumObj.landmark[0], sizeof(HumObj.landmark));
     }
 
@@ -227,7 +227,7 @@ int _sample_run_joint_inference_human_pose(sample_run_joint_models *pModels, con
         pResults->mObjects[i].bbox.w /= pModels->SAMPLE_RESTORE_WIDTH;
         pResults->mObjects[i].bbox.h /= pModels->SAMPLE_RESTORE_HEIGHT;
 
-        if (pResults->mObjects[i].bHasBodyLmk)
+        if (pResults->mObjects[i].bHasLandmark == SAMPLE_RUN_JOINT_BODY_LMK_SIZE)
         {
             for (int j = 0; j < SAMPLE_RUN_JOINT_BODY_LMK_SIZE; j++)
             {
@@ -268,7 +268,7 @@ int _sample_run_joint_inference_animal_pose(sample_run_joint_models *pModels, co
         ret = sample_run_joint_inference(pModels->mMinor.JointHandle, pstFrame, &HumObj.bbox);
         sample_run_joint_post_process_pose(pModels, &HumObj);
         pResults->nObjSize = 1;
-        pResults->mObjects[0].bHasAnimalLMK = 1;
+        pResults->mObjects[0].bHasLandmark = SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE;
         memcpy(&pResults->mObjects[0].landmark[0], &HumObj.landmark[0], sizeof(HumObj.landmark));
     }
 
@@ -279,7 +279,7 @@ int _sample_run_joint_inference_animal_pose(sample_run_joint_models *pModels, co
         pResults->mObjects[i].bbox.w /= pModels->SAMPLE_RESTORE_WIDTH;
         pResults->mObjects[i].bbox.h /= pModels->SAMPLE_RESTORE_HEIGHT;
 
-        if (pResults->mObjects[i].bHasAnimalLMK)
+        if (pResults->mObjects[i].bHasLandmark == SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE)
         {
             for (int j = 0; j < SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE; j++)
             {
@@ -390,7 +390,7 @@ int _sample_run_joint_inference_handpose(sample_run_joint_models *pModels, const
             }
         }
 
-        if (pResults->mObjects[i].bHasHandLmk)
+        if (pResults->mObjects[i].bHasLandmark == SAMPLE_RUN_JOINT_HAND_LMK_SIZE)
         {
             for (size_t j = 0; j < SAMPLE_RUN_JOINT_HAND_LMK_SIZE; j++)
             {

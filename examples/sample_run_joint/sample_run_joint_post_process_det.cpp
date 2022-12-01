@@ -196,10 +196,10 @@ void sample_run_joint_post_process_detection(sample_run_joint_results *pResults,
         pResults->mObjects[i].label = obj.label;
         pResults->mObjects[i].prob = obj.prob;
 
-        pResults->mObjects[i].bHasFaceLmk = pResults->mObjects[i].bHaseMask = pResults->mObjects[i].bHasBodyLmk = pResults->mObjects[i].bHasHandLmk = 0;
+        pResults->mObjects[i].bHasLandmark = pResults->mObjects[i].bHasMask = 0;
         if (pModels->mMajor.ModelType == MT_DET_YOLOV5_FACE)
         {
-            pResults->mObjects[i].bHasFaceLmk = 1;
+            pResults->mObjects[i].bHasLandmark = SAMPLE_RUN_JOINT_FACE_LMK_SIZE;
             for (size_t j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)
             {
                 pResults->mObjects[i].landmark[j].x = obj.landmark[j].x;
@@ -261,11 +261,12 @@ void sample_run_joint_post_process_yolov5_seg(sample_run_joint_results *pResults
         pResults->mObjects[i].label = obj.label;
         pResults->mObjects[i].prob = obj.prob;
 
-        pResults->mObjects[i].bHasFaceLmk = pResults->mObjects[i].bHaseMask = pResults->mObjects[i].bHasBodyLmk = pResults->mObjects[i].bHasHandLmk = 0;
+        pResults->mObjects[i].bHasLandmark = pResults->mObjects[i].bHasMask = 0;
 
-        pResults->mObjects[i].bHaseMask = !obj.mask.empty();
 
-        if (pResults->mObjects[i].bHaseMask)
+        pResults->mObjects[i].bHasMask = !obj.mask.empty();
+
+        if (pResults->mObjects[i].bHasMask)
         {
             cv::Mat &mask = mSimpleRingBuffer.next();
             mask = obj.mask;
@@ -326,7 +327,7 @@ void sample_run_joint_post_process_palm_hand(sample_run_joint_results *pResults,
             pResults->mObjects[i].bbox_vertices[j].y = obj.vertices[j].y;
         }
 
-        pResults->mObjects[i].bHasFaceLmk = pResults->mObjects[i].bHaseMask = pResults->mObjects[i].bHasBodyLmk = pResults->mObjects[i].bHasHandLmk = 0;
+        pResults->mObjects[i].bHasLandmark = pResults->mObjects[i].bHasMask = 0;
 
         strcpy(pResults->mObjects[i].objname, "hand");
     }
@@ -358,8 +359,8 @@ void sample_run_joint_post_process_det_single_func(sample_run_joint_results *pRe
     {
         ALOGE("cannot find process func for modeltype %d", pModels->mMajor.ModelType);
     }
-    
-    
+
+
     switch (pModels->ModelType_Main)
     {
     case MT_MLM_HUMAN_POSE_AXPPL:
@@ -377,7 +378,7 @@ void sample_run_joint_post_process_det_single_func(sample_run_joint_results *pRe
             pResults->mObjects[i].bbox.w /= pModels->SAMPLE_RESTORE_WIDTH;
             pResults->mObjects[i].bbox.h /= pModels->SAMPLE_RESTORE_HEIGHT;
 
-            if (pResults->mObjects[i].bHasFaceLmk)
+            if (pResults->mObjects[i].bHasLandmark == SAMPLE_RUN_JOINT_FACE_LMK_SIZE)
             {
                 for (AX_U8 j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)
                 {

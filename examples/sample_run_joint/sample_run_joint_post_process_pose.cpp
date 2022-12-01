@@ -39,7 +39,7 @@ void sample_run_joint_post_process_pose(sample_run_joint_models *pModels, sample
         auto ptr = (float *)pJointAttr->pOutputs[0].pVirAddr;
         auto ptr_index = (float *)pJointAttr->pOutputs[1].pVirAddr;
         pose::ppl_pose_post_process(ptr, ptr_index, ai_point_result, SAMPLE_RUN_JOINT_BODY_LMK_SIZE);
-        pObj->bHasBodyLmk = 1;
+        pObj->bHasLandmark = SAMPLE_RUN_JOINT_BODY_LMK_SIZE;
         for (size_t i = 0; i < SAMPLE_RUN_JOINT_BODY_LMK_SIZE; i++)
         {
             pObj->landmark[i].x = ai_point_result.keypoints[i].x;
@@ -51,11 +51,23 @@ void sample_run_joint_post_process_pose(sample_run_joint_models *pModels, sample
     {
         auto ptr = (float *)pJointAttr->pOutputs[0].pVirAddr;
         pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_RUN_JOINT_BODY_LMK_SIZE, pJointAttr->algo_height, pJointAttr->algo_width);
-        pObj->bHasBodyLmk = 1;
+        pObj->bHasLandmark = SAMPLE_RUN_JOINT_BODY_LMK_SIZE;
         for (size_t i = 0; i < SAMPLE_RUN_JOINT_BODY_LMK_SIZE; i++)
         {
             pObj->landmark[i].x = ai_point_result.keypoints[i].x;
             pObj->landmark[i].y = ai_point_result.keypoints[i].y;
+        }
+    }
+    break;
+    case MT_MLM_ANIMAL_POSE_HRNET:
+    {
+        auto ptr = (float *)pJointAttr->pOutputs[0].pVirAddr;
+        pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE, pJointAttr->algo_height, pJointAttr->algo_width);
+        pObj->bHasLandmark = SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE;
+        for (size_t i = 0; i < SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE; i++)
+        {
+            pObj->landmark[i].x = (ai_point_result.keypoints[i].x - tmp_w) * ratio_x + pObj->bbox.x;
+            pObj->landmark[i].y = (ai_point_result.keypoints[i].y - tmp_h) * ratio_y + pObj->bbox.y;
         }
     }
     break;
@@ -66,7 +78,7 @@ void sample_run_joint_post_process_pose(sample_run_joint_models *pModels, sample
         auto point_ptr = (float *)info_point.pVirAddr;
         auto score_ptr = (float *)info_score.pVirAddr;
         pose::post_process_hand(point_ptr, score_ptr, ai_hand_point_result, SAMPLE_RUN_JOINT_HAND_LMK_SIZE, pJointAttr->algo_height, pJointAttr->algo_width);
-        pObj->bHasHandLmk = 1;
+        pObj->bHasLandmark = SAMPLE_RUN_JOINT_HAND_LMK_SIZE;
         for (size_t i = 0; i < SAMPLE_RUN_JOINT_HAND_LMK_SIZE; i++)
         {
             pObj->landmark[i].x = ai_hand_point_result.keypoints[i].x;

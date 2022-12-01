@@ -30,7 +30,7 @@ extern "C"
     //给sipeed的python包用的
     typedef int (*display_callback_for_sipeed_py)(int, int, int, char **);
     display_callback_for_sipeed_py g_cb_display_sipeed_py = NULL;
-    int register_display_callback(display_callback_for_sipeed_py cb) { g_cb_display_sipeed_py = cb; }
+    int register_display_callback(display_callback_for_sipeed_py cb) { g_cb_display_sipeed_py = cb; return 0; }
 }
 
 void genImg(int charlen, float fontscale, int thickness, osd_utils_img *out)
@@ -214,73 +214,103 @@ void drawResults(osd_utils_img *out, float fontscale, int thickness, sample_run_
             cv::putText(image, results->mObjects[i].objname, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, fontscale,
                         cv::Scalar(0, 0, 0, 255), thickness);
         }
-
-        if (results->mObjects[i].bHasBodyLmk)
+        switch (results->mObjects[i].bHasLandmark)
         {
-            static std::vector<pose::skeleton> pairs = {{15, 13, 2},
-                                                        {13, 11, 2},
-                                                        {16, 14, 2},
-                                                        {14, 12, 2},
-                                                        {11, 12, 2},
-                                                        {5, 11, 2},
-                                                        {6, 12, 2},
-                                                        {5, 6, 2},
-                                                        {5, 7, 2},
-                                                        {6, 8, 2},
-                                                        {7, 9, 2},
-                                                        {8, 10, 2},
-                                                        {1, 2, 2},
-                                                        {0, 1, 2},
-                                                        {0, 2, 2},
-                                                        {1, 3, 2},
-                                                        {2, 4, 2},
-                                                        {0, 5, 2},
-                                                        {0, 6, 2}};
-            draw_pose_result(image, &results->mObjects[i], pairs, SAMPLE_RUN_JOINT_BODY_LMK_SIZE, offset_x, offset_y);
-        }
+            case 5:
+                {
+                    for (size_t j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)
+                    {
+                        cv::Point p(results->mObjects[i].landmark[j].x * out->width + offset_x,
+                                    results->mObjects[i].landmark[j].y * out->height + offset_y);
+                        cv::circle(image, p, 1, cv::Scalar(255, 0, 0, 255), 2);
+                    }
+                    break;
+                }
+            case 17:
+                {
+                    static std::vector<pose::skeleton> pairs = {{15, 13, 0},
+                                                                {13, 11, 0},
+                                                                {16, 14, 0},
+                                                                {14, 12, 0},
+                                                                {11, 12, 0},
+                                                                {5, 11, 0},
+                                                                {6, 12, 0},
+                                                                {5, 6, 0},
+                                                                {5, 7, 0},
+                                                                {6, 8, 0},
+                                                                {7, 9, 0},
+                                                                {8, 10, 0},
+                                                                {1, 2, 0},
+                                                                {0, 1, 0},
+                                                                {0, 2, 0},
+                                                                {1, 3, 0},
+                                                                {2, 4, 0},
+                                                                {0, 5, 0},
+                                                                {0, 6, 0}};
+                    draw_pose_result(image, &results->mObjects[i], pairs, SAMPLE_RUN_JOINT_BODY_LMK_SIZE, offset_x, offset_y);
+                    break;
+                }
+            case 20:
+                {
+                    static std::vector<pose::skeleton> pairs = {{19, 15, 0},
+                                                                {18, 14, 0},
+                                                                {17, 13, 0},
+                                                                {16, 12, 0},
+                                                                {15, 11, 0},
+                                                                {14, 10, 0},
+                                                                {13, 9, 0},
+                                                                {12, 8, 0},
+                                                                {11, 6, 0},
+                                                                {10, 6, 0},
+                                                                {9, 7, 0},
+                                                                {8, 7, 0},
+                                                                {6, 7, 0},
+                                                                {7, 5, 0},
+                                                                {5, 4, 0},
+                                                                {0, 2, 0},
+                                                                {1, 3, 0},
+                                                                {0, 1, 0},
+                                                                {0, 4, 0},
+                                                                {1, 4, 0}};
+                    draw_pose_result(image, &results->mObjects[i], pairs, SAMPLE_RUN_JOINT_ANIMAL_LMK_SIZE, offset_x, offset_y);
+                    break;
+                }
+            case 21:
+                {
+                    for (size_t j = 0; j < SAMPLE_RUN_JOINT_HAND_LMK_SIZE; j++)
+                    {
+                        cv::Point p(results->mObjects[i].landmark[j].x * out->width + offset_x,
+                                    results->mObjects[i].landmark[j].y * out->height + offset_y);
+                        cv::circle(image, p, 1, cv::Scalar(255, 0, 0, 255), 2);
+                    }
+                    static std::vector<pose::skeleton> hand_pairs = {{0, 1, 0},
+                                                                    {1, 2, 0},
+                                                                    {2, 3, 0},
+                                                                    {3, 4, 0},
+                                                                    {0, 5, 1},
+                                                                    {5, 6, 1},
+                                                                    {6, 7, 1},
+                                                                    {7, 8, 1},
+                                                                    {0, 9, 2},
+                                                                    {9, 10, 2},
+                                                                    {10, 11, 2},
+                                                                    {11, 12, 2},
+                                                                    {0, 13, 3},
+                                                                    {13, 14, 3},
+                                                                    {14, 15, 3},
+                                                                    {15, 16, 3},
+                                                                    {0, 17, 4},
+                                                                    {17, 18, 4},
+                                                                    {18, 19, 4},
+                                                                    {19, 20, 4}};
+                    draw_pose_result(image, &results->mObjects[i], hand_pairs, SAMPLE_RUN_JOINT_HAND_LMK_SIZE, offset_x, offset_y);
+                    break;
+                }
 
-        if (results->mObjects[i].bHasFaceLmk)
-        {
-            for (size_t j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)
-            {
-                cv::Point p(results->mObjects[i].landmark[j].x * out->width + offset_x,
-                            results->mObjects[i].landmark[j].y * out->height + offset_y);
-                cv::circle(image, p, 1, cv::Scalar(255, 0, 0, 255), 2);
-            }
+            default:
+                break;
         }
-
-        if (results->mObjects[i].bHasHandLmk)
-        {
-            for (size_t j = 0; j < SAMPLE_RUN_JOINT_HAND_LMK_SIZE; j++)
-            {
-                cv::Point p(results->mObjects[i].landmark[j].x * out->width + offset_x,
-                            results->mObjects[i].landmark[j].y * out->height + offset_y);
-                cv::circle(image, p, 1, cv::Scalar(255, 0, 0, 255), 2);
-            }
-            static std::vector<pose::skeleton> hand_pairs = {{0, 1, 0},
-                                                             {1, 2, 0},
-                                                             {2, 3, 0},
-                                                             {3, 4, 0},
-                                                             {0, 5, 1},
-                                                             {5, 6, 1},
-                                                             {6, 7, 1},
-                                                             {7, 8, 1},
-                                                             {0, 9, 2},
-                                                             {9, 10, 2},
-                                                             {10, 11, 2},
-                                                             {11, 12, 2},
-                                                             {0, 13, 3},
-                                                             {13, 14, 3},
-                                                             {14, 15, 3},
-                                                             {15, 16, 3},
-                                                             {0, 17, 4},
-                                                             {17, 18, 4},
-                                                             {18, 19, 4},
-                                                             {19, 20, 4}};
-            draw_pose_result(image, &results->mObjects[i], hand_pairs, SAMPLE_RUN_JOINT_HAND_LMK_SIZE, offset_x, offset_y);
-        }
-
-        if (results->mObjects[i].bHaseMask && results->mObjects[i].mYolov5Mask.data)
+        if (results->mObjects[i].bHasMask && results->mObjects[i].mYolov5Mask.data)
         {
             cv::Mat mask(results->mObjects[i].mYolov5Mask.h, results->mObjects[i].mYolov5Mask.w, CV_8U, results->mObjects[i].mYolov5Mask.data);
             if (!mask.empty())
@@ -308,7 +338,7 @@ int freeObjs(sample_run_joint_results *results)
     results->bPPHumSeg = 0;
     for (size_t i = 0; i < results->nObjSize; i++)
     {
-        if (results->mObjects[i].bHaseMask && results->mObjects[i].mYolov5Mask.data)
+        if (results->mObjects[i].bHasMask && results->mObjects[i].mYolov5Mask.data)
         {
             // cv::Mat *mask = (cv::Mat *)results->mObjects[i].mYolov5Mask;
             results->mObjects[i].mYolov5Mask.data = nullptr;
@@ -318,4 +348,5 @@ int freeObjs(sample_run_joint_results *results)
     results->mPPHumSeg.data = nullptr;
     results->mYolopv2ll.data = nullptr;
     results->mYolopv2seg.data = nullptr;
+    return 0;
 }

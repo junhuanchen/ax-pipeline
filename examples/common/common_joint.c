@@ -71,4 +71,5 @@ int COMMON_JOINT_Deinit(sample_run_joint_models *pModels)
         sample_run_joint_release(pModels->mMajor.JointHandle);
         sample_run_joint_release(pModels->mMinor.JointHandle);
     }
+    return 0;
 }

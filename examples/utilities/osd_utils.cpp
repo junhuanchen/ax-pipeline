@@ -420,6 +420,8 @@ void _draw_fps(cv::Mat &image, osd_utils_img *out, float fontscale, int thicknes
 
 void drawResults(osd_utils_img *out, float fontscale, int thickness, sample_run_joint_results *results, int offset_x, int offset_y)
 {
+    if (g_cb_display_sipeed_py && (g_cb_display_sipeed_py(out->height, out->width, CV_8UC4, (char **)&out->data) != 0))
+        return;
 
     cv::Mat image(out->height, out->width, CV_8UC4, out->data);
 

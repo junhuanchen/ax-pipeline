@@ -115,6 +115,7 @@ void *osd_thread(void *)
         // freeObjs(&mResults);
         usleep(0);
     }
+    return NULL;
 }
 
 void ai_inference_func(pipeline_buffer_t *buff)
@@ -328,7 +329,7 @@ int main(int argc, char *argv[])
     gModels.SAMPLE_IVPS_ALGO_WIDTH = 960;
     gModels.SAMPLE_IVPS_ALGO_HEIGHT = 540;
 
-    AX_S32 isExit = 0, i, ch;
+    AX_S32 isExit = 0, ch;
     AX_S32 s32Ret = 0;
     COMMON_SYS_ARGS_T tCommonArgs = {0};
     char h26xfile[512];
@@ -561,16 +562,10 @@ int main(int argc, char *argv[])
 
 EXIT_6:
 
-EXIT_5:
-
-EXIT_4:
-
-EXIT_3:
     COMMON_JOINT_Deinit(&gModels);
 
 EXIT_2:
 
-EXIT_1:
     COMMON_SYS_DeInit();
 
     ALOGN("sample end\n");

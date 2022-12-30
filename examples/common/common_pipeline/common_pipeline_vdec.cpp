@@ -157,7 +157,7 @@ int _create_vdec_grp(pipeline_t *pipe)
         FrameSize = AX_VDEC_GetPicBufferSize(4096, 4096, PT_JPEG); // 3655712;
         printf("Get pool mem size is %d\n", FrameSize);
 
-        AX_S32 s32Ret = AX_SUCCESS;
+        // AX_S32 s32Ret = AX_SUCCESS;
         /* vdec use pool to alloc output buffer */
         AX_POOL_CONFIG_T stPoolConfig = {0};
         AX_POOL s32PoolId;
@@ -238,4 +238,5 @@ int _create_jvdec_grp(pipeline_t *pipe)
         AX_VDEC_DestroyGrp(pipe->m_vdec_attr.n_vdec_grp);
         return -1;
     }
+    return 0;
 }

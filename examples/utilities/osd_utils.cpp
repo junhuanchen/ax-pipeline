@@ -148,7 +148,7 @@ void _draw_bbox(cv::Mat &image, osd_utils_img *out, float fontscale, int thickne
     int x, y;
     cv::Size label_size;
     int baseLine = 0;
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         cv::Rect rect(results->mObjects[i].bbox.x * out->width + offset_x,
                       results->mObjects[i].bbox.y * out->height + offset_y,
@@ -208,9 +208,9 @@ void _draw_bbox(cv::Mat &image, osd_utils_img *out, float fontscale, int thickne
 void _draw_yolov5_face(cv::Mat &image, osd_utils_img *out, float fontscale, int thickness, sample_run_joint_results *results, int offset_x, int offset_y)
 {
     _draw_bbox(image, out, fontscale, thickness, results, offset_x, offset_y);
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
-        for (size_t j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)
+        for (int j = 0; j < SAMPLE_RUN_JOINT_FACE_LMK_SIZE; j++)
         {
             cv::Point p(results->mObjects[i].landmark[j].x * out->width + offset_x,
                         results->mObjects[i].landmark[j].y * out->height + offset_y);
@@ -222,7 +222,7 @@ void _draw_yolov5_face(cv::Mat &image, osd_utils_img *out, float fontscale, int 
 void _draw_yolov5_seg(cv::Mat &image, osd_utils_img *out, float fontscale, int thickness, sample_run_joint_results *results, int offset_x, int offset_y)
 {
     _draw_bbox(image, out, fontscale, thickness, results, offset_x, offset_y);
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         cv::Rect rect(results->mObjects[i].bbox.x * out->width + offset_x,
                       results->mObjects[i].bbox.y * out->height + offset_y,
@@ -272,7 +272,7 @@ void _draw_yolopv2(cv::Mat &image, osd_utils_img *out, float fontscale, int thic
 void _draw_human_pose(cv::Mat &image, osd_utils_img *out, float fontscale, int thickness, sample_run_joint_results *results, int offset_x, int offset_y)
 {
     _draw_bbox(image, out, fontscale, thickness, results, offset_x, offset_y);
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         static std::vector<pose::skeleton> pairs = {{15, 13, 0},
                                                     {13, 11, 0},
@@ -300,7 +300,7 @@ void _draw_human_pose(cv::Mat &image, osd_utils_img *out, float fontscale, int t
 void _draw_hand_pose(cv::Mat &image, osd_utils_img *out, float fontscale, int thickness, sample_run_joint_results *results, int offset_x, int offset_y)
 {
     _draw_bbox(image, out, fontscale, thickness, results, offset_x, offset_y);
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         static std::vector<pose::skeleton> hand_pairs = {{0, 1, 0},
                                                          {1, 2, 0},
@@ -329,7 +329,7 @@ void _draw_hand_pose(cv::Mat &image, osd_utils_img *out, float fontscale, int th
 void _draw_animal_pose(cv::Mat &image, osd_utils_img *out, float fontscale, int thickness, sample_run_joint_results *results, int offset_x, int offset_y)
 {
     _draw_bbox(image, out, fontscale, thickness, results, offset_x, offset_y);
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         static std::vector<pose::skeleton> pairs = {{19, 15, 0},
                                                     {18, 14, 0},
@@ -446,7 +446,7 @@ int freeObjs(sample_run_joint_results *results)
 {
     results->bYolopv2Mask = 0;
     results->bPPHumSeg = 0;
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         if (results->mObjects[i].bHasMask && results->mObjects[i].mYolov5Mask.data)
         {

@@ -562,6 +562,7 @@ int destory_pipeline(pipeline_t *pipe)
     default:
         break;
     }
+    return 0;
 }
 
 int user_input(pipeline_t *pipe, int pipe_cnt, pipeline_buffer_t *buf)
@@ -620,7 +621,7 @@ int user_input(pipeline_t *pipe, int pipe_cnt, pipeline_buffer_t *buf)
             }
         }
 
-        AX_U32 PoolId = frameInfo.u32PoolId;
+        // AX_U32 PoolId = frameInfo.u32PoolId;
 
         AX_BLK BlkId = frameInfo.stVFrame.u32BlkId[0];
         ret = AX_POOL_ReleaseBlock(BlkId);

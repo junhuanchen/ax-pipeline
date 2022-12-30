@@ -76,7 +76,7 @@ int _sample_run_joint_inference_human_pose(sample_run_joint_models *pModels, con
     sample_run_joint_object HumObj = {0};
     int idx = -1;
     AX_BOOL bHasHuman = AX_FALSE;
-    for (size_t i = 0; i < pResults->nObjSize; i++)
+    for (int i = 0; i < pResults->nObjSize; i++)
     {
         if (pResults->mObjects[i].label == pModels->MINOR_CLASS_IDS[0])
         {
@@ -198,7 +198,7 @@ int _sample_run_joint_inference_animal_pose(sample_run_joint_models *pModels, co
     sample_run_joint_object HumObj = {0};
     int idx = -1;
     AX_BOOL bHasHuman = AX_FALSE;
-    for (size_t i = 0; i < pResults->nObjSize; i++)
+    for (int i = 0; i < pResults->nObjSize; i++)
     {
         for (int j = 0; j < pModels->NUM_MINOR_CLASS_ID && j < SAMPLE_CLASS_ID_COUNT; j++)
         {
@@ -486,9 +486,12 @@ int _sample_run_joint_inference_license_plate_recognition(sample_run_joint_model
         ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, (AX_NPU_CV_Image *)pstFrame, &tmp, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
 
         static const std::vector<std::string> plate_string = {
-            "#", "京", "沪", "津", "渝", "冀", "晋", "蒙", "辽", "吉", "黑", "苏", "浙", "皖",
-            "闽", "赣", "鲁", "豫", "鄂", "湘", "粤", "桂", "琼", "川", "贵", "云", "藏", "陕",
-            "甘", "青", "宁", "新", "学", "警", "港", "澳", "挂", "使", "领", "民", "航", "深",
+            // "#", "京", "沪", "津", "渝", "冀", "晋", "蒙", "辽", "吉", "黑", "苏", "浙", "皖",
+            // "闽", "赣", "鲁", "豫", "鄂", "湘", "粤", "桂", "琼", "川", "贵", "云", "藏", "陕",
+            // "甘", "青", "宁", "新", "学", "警", "港", "澳", "挂", "使", "领", "民", "航", "深",
+            "#", "beijing", "shanghai", "tianjin", "chongqing", "hebei", "shan1xi", "neimenggu", "liaoning", "jilin", "heilongjiang", "jiangsu", "zhejiang", "anhui",
+            "fujian", "jiangxi", "shandong", "henan", "hubei", "hunan", "guangdong", "guangxi", "hainan", "sichuan", "guizhou", "yunnan", "xizang", "shan3xi",
+            "gansu", "qinghai", "ningxia", "xinjiang", "jiaolian", "jingcha", "xianggang", "aomen", "gua", "shi", "ling", "ming", "hang", "shen",
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
             "A", "B", "C", "D", "E", "F", "G", "H",
             "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
@@ -525,8 +528,11 @@ int _sample_run_joint_inference_license_plate_recognition(sample_run_joint_model
             pre_str = plate_string[index];
         }
         // return plate;
-        // ALOGI("%s %d",plate.c_str(),plate.length());
-        sprintf(pResults->mObjects[i].objname, plate.c_str());
+
+        // ALOGI("%s %d",plate.c_str(), plate.length());
+        if (plate.length() < SAMPLE_OBJ_NAME_MAX_LEN) {
+            sprintf(pResults->mObjects[i].objname, "%.*s", plate.length(), plate.c_str());
+        }
     }
 
     for (int i = 0; i < pResults->nObjSize; i++)
@@ -885,7 +891,7 @@ int sample_run_joint_parse_param(char *json_file_path, sample_run_joint_models *
 
 int sample_run_joint_inference_single_func(sample_run_joint_models *pModels, const void *pstFrame, sample_run_joint_results *pResults)
 {
-    int ret;
+    int ret = 0;
     memset(pResults, 0, sizeof(sample_run_joint_results));
     pResults->mModelType = pModels->ModelType_Main;
 #if AX_DEBUG

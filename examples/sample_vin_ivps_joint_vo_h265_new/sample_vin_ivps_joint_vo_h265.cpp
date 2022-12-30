@@ -117,6 +117,7 @@ void *osd_thread(void *)
         // freeObjs(&mResults);
         usleep(0);
     }
+    return NULL;
 }
 
 void ai_inference_func(pipeline_buffer_t *buff)
@@ -528,9 +529,6 @@ int main(int argc, char *argv[])
 
 EXIT_6:
 
-EXIT_5:
-
-EXIT_4:
     for (i = 0; i < tCommonArgs.nCamCnt; i++)
     {
         if (!gCams[i].bOpen)
@@ -544,7 +542,6 @@ EXIT_3:
 
 EXIT_2:
 
-EXIT_1:
     COMMON_SYS_DeInit();
 
     ALOGN("sample end\n");

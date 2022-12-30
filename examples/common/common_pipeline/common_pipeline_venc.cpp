@@ -202,7 +202,7 @@ int _create_venc_chn(pipeline_t *pipe)
     AX_VENC_CHN_ATTR_S stVencChnAttr;
     VIDEO_CONFIG_T config;
     memset(&config, 0, sizeof(VIDEO_CONFIG_T));
-    AX_S32 s32Ret = 0;
+    // AX_S32 s32Ret = 0;
 
     config.stRCInfo.eRCType = VENC_RC_VBR;
     config.nGOP = 50;
@@ -230,7 +230,7 @@ int _create_venc_chn(pipeline_t *pipe)
         config.ePayloadType = PT_MJPEG;
         break;
     default:
-        ALOGE("pipeline_output_e=%d,should not init venc");
+        // ALOGE("pipeline_output_e=%d,should not init venc");
         return -1;
     }
 

@@ -229,7 +229,7 @@ static void *getYuv(void *arg)
     int retval = -1;
     AX_IMG_INFO_T img_info = {0};
     AX_VOID *pSrcVirAddr = NULL;
-    char *yuvarr = NULL;
+    // char *yuvarr = NULL;
     AX_U32 i = (AX_U32)arg;
 
     while (gCams[i].bOpen)

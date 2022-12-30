@@ -117,6 +117,7 @@ void *osd_thread(void *)
         // freeObjs(&mResults);
         usleep(0);
     }
+    return NULL;
 }
 
 void ai_inference_func(pipeline_buffer_t *buff)

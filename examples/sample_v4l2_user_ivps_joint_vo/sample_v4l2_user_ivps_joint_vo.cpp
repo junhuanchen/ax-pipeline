@@ -118,6 +118,7 @@ void *osd_thread(void *)
         // freeObjs(&mResults);
         usleep(0);
     }
+    return NULL;
 }
 
 void ai_inference_func(pipeline_buffer_t *buff)
@@ -196,7 +197,7 @@ int main(int argc, char *argv[])
     gModels.SAMPLE_IVPS_ALGO_WIDTH = 960;
     gModels.SAMPLE_IVPS_ALGO_HEIGHT = 540;
 
-    AX_S32 isExit = 0, i, ch;
+    AX_S32 isExit = 0, ch;
     AX_S32 s32Ret = 0;
     COMMON_SYS_ARGS_T tCommonArgs = {0};
     signal(SIGPIPE, SIG_IGN);
@@ -376,7 +377,7 @@ int main(int argc, char *argv[])
         buf_mjpg.n_height = videoCapture->getHeight();
         printf("v4l2 video width:%d height:%d\r\n", buf_mjpg.n_width, buf_mjpg.n_height);
 
-        AX_U32 sReadLen = 0;
+        // AX_U32 sReadLen = 0;
         timeval timeout = {0};
         timeout.tv_usec = 200;
         while (!gLoopExit)
@@ -440,16 +441,10 @@ int main(int argc, char *argv[])
 
 EXIT_6:
 
-EXIT_5:
-
-EXIT_4:
-
-EXIT_3:
     COMMON_JOINT_Deinit(&gModels);
 
 EXIT_2:
 
-EXIT_1:
     COMMON_SYS_DeInit();
 
     ALOGN("sample end\n");

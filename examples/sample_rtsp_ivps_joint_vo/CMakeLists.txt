@@ -1,4 +1,4 @@
-set(SampleName sample_rtsp_ivps_joint_vo_new)
+set(SampleName sample_rtsp_ivps_joint)
 
 # opencv
 set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/3rdparty/opencv-arm-linux/lib/cmake/opencv4)

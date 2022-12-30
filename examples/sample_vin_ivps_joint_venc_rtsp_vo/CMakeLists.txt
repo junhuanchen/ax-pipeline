@@ -8,10 +8,6 @@ function(targetlink name)
     target_include_directories(${name} PRIVATE ${OpenCV_INCLUDE_DIRS})
     target_link_libraries(${name} PRIVATE ${OpenCV_LIBS})
 
-    # drm
-    target_link_directories(${name} PRIVATE ${BSP_MSP_DIR}/../../third-party/drm/lib)
-    target_link_libraries(${name} PRIVATE drm)
-
     target_include_directories(${name} PRIVATE ${BSP_MSP_DIR}/../sample/common)
     target_include_directories(${name} PRIVATE ${BSP_MSP_DIR}/include)
     target_include_directories(${name} PRIVATE ${BSP_MSP_DIR}/include/npu_cv_kit)
@@ -21,9 +17,13 @@ function(targetlink name)
 
     target_link_libraries(${name} PRIVATE sample_run_joint)
 
-    # target_link_libraries (sample_vin_ivps_joint_venc_rtsp_vo PRIVATE pthread dl stdc++fs) # ax620u use this
+    # drm
+    target_link_directories(${name} PRIVATE ${BSP_MSP_DIR}/../../third-party/drm/lib)
+    target_link_libraries(${name} PRIVATE drm)
+
+    # target_link_libraries (sample_vin_ivps_joint_venc_rtsp PRIVATE pthread dl stdc++fs) # ax620u use this
     target_link_libraries(${name} PRIVATE ax_run_joint ax_interpreter_external ax_interpreter ax_sys axsyslog stdc++fs)
-    target_link_libraries(${name} PRIVATE ax_venc ax_ivps ax_npu_cv_kit ax_3a ax_proton ax_mipi gomp ax_vo)
+    target_link_libraries(${name} PRIVATE ax_venc ax_vdec ax_vo ax_ivps ax_npu_cv_kit ax_3a ax_proton ax_mipi gomp)
     target_link_libraries(${name} PRIVATE sns_os04a10 sns_os04a10_master sns_os04a10_slave sns_gc4653)
 
     # openssl
@@ -34,8 +34,8 @@ function(targetlink name)
 
 endfunction()
 
-file(GLOB SRC_LIST "*.c" "pipe/*.c" "../utilities/*.cpp" "../utilities/*.c")
-file(GLOB SRC_LIST_COMMON "../common/*.c" "${BSP_MSP_DIR}/../sample/common/*.c" "${BSP_MSP_DIR}/../sample/common/common_codec/*.c" "${BSP_MSP_DIR}/../sample/common/vo/*.c")
+file(GLOB SRC_BASE_LIST "*.cpp" "../utilities/*.cpp" "../utilities/*.c")
+file(GLOB SRC_LIST_COMMON "../common/common_func.c" "../common/common_joint.c" "../common/common_pipeline/*.cpp" "${BSP_MSP_DIR}/../sample/common/*.c" "${BSP_MSP_DIR}/../sample/common/common_codec/*.c" "${BSP_MSP_DIR}/../sample/common/vo/*.c")
 file(GLOB SRC_LIST_RTSP "../rtsp/src/*.c")
 list(APPEND SRC_BASE_LIST
     ${SRC_LIST}
@@ -49,8 +49,10 @@ add_executable(${SampleName}
 targetlink(${SampleName})
 install(TARGETS ${SampleName} DESTINATION bin)
 
-if(SIPY_BUILD)
-    set(SampleName ${SampleName}_sipy)
+
+set(SampleName ${SampleName}_sipy)
+
+if (SIPY_BUILD)
     add_library(${SampleName} SHARED
         ${SRC_BASE_LIST}
     )
@@ -59,4 +61,3 @@ if(SIPY_BUILD)
     targetlink(${SampleName})
     install(TARGETS ${SampleName} DESTINATION lib)
 endif()
-

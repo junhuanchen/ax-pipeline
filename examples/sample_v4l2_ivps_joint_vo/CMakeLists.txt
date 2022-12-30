@@ -33,6 +33,11 @@ function(targetlink name)
     target_include_directories(${name} PRIVATE ../rtsp/inc)
 
     target_include_directories(${name} PRIVATE ./libv4l2cpp/inc)
+
+    target_include_directories(${name} PRIVATE ./libyuv/include)
+    target_link_directories(${name} PRIVATE ./libyuv/lib)
+    target_link_libraries(${name} PRIVATE yuv jpeg)
+
 endfunction()
 
 file(GLOB SRC_BASE_LIST "*.cpp" "../utilities/*.cpp" "../utilities/*.c")

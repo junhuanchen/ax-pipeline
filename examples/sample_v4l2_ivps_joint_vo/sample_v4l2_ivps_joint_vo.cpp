@@ -38,6 +38,7 @@
 #include "map"
 
 #include "libv4l2cpp/inc/V4l2Capture.h"
+#include "libyuv.h"
 
 #define pipe_count 2
 
@@ -344,14 +345,20 @@ int main(int argc, char *argv[])
     }
 
     {
-        int sSize = 1280 * 720 * 3;
+        const int v4l2_width_max = 1280, v4l2_height_max = 720;
+
+        int sSize = v4l2_width_max * v4l2_height_max * 3;
         std::vector<unsigned char> cbuffer(sSize);
-        // unsigned char *cbuffer = new unsigned char[1024 * 1024];
         pipeline_buffer_t buf_mjpg = {0};
         buf_mjpg.p_vir = cbuffer.data();
+        std::vector<unsigned char> nv12buffer(v4l2_width_max * v4l2_height_max * 3 / 2);
 
-        V4L2DeviceParameters param("/dev/video0", V4L2_PIX_FMT_MJPEG, 1280, 720, 30, IOTYPE_MMAP, 0);
+
+        V4L2DeviceParameters param("/dev/video0", V4L2_PIX_FMT_MJPEG, v4l2_width_max, v4l2_height_max, 30, IOTYPE_MMAP, 0);
         V4l2Capture *videoCapture = V4l2Capture::create(param);
+        buf_mjpg.n_width = videoCapture->getWidth();
+        buf_mjpg.n_height = videoCapture->getHeight();
+        printf("v4l2 video width:%d height:%d\r\n", buf_mjpg.n_width, buf_mjpg.n_height);
 
         AX_U32 sReadLen = 0;
         timeval timeout = {0};
@@ -362,13 +369,50 @@ int main(int argc, char *argv[])
             {
                 buf_mjpg.n_size = videoCapture->read((char *)buf_mjpg.p_vir, sSize);
                 buf_mjpg.p_vir = cbuffer.data();
-                user_input(&pipelines[0], &buf_mjpg);
+                // user_input(&pipelines[0], &buf_mjpg);
+
+                auto ret = libyuv::MJPGToNV12((uint8_t *)buf_mjpg.p_vir,
+                    buf_mjpg.n_size,
+                    nv12buffer.data(),
+                    buf_mjpg.n_width,
+                    nv12buffer.data() + buf_mjpg.n_width * buf_mjpg.n_height,
+                    buf_mjpg.n_width,
+                    buf_mjpg.n_width,
+                    buf_mjpg.n_height,
+                    buf_mjpg.n_width,
+                    buf_mjpg.n_height);
+
+                if (0 == ret) {
+                    pipeline_buffer_t buf_nv12 = {0};
+                    buf_nv12.p_vir = nv12buffer.data();
+                    buf_nv12.n_width = buf_mjpg.n_width;
+                    buf_nv12.n_height = buf_mjpg.n_height;
+                    buf_nv12.n_size = buf_mjpg.n_width * buf_mjpg.n_height * 3 / 2;
+                    user_input(&pipelines[0], &buf_nv12);
+                }
+
             }
             else
             {
-                ALOGN("read 不到");
-                usleep(100 * 1000);
+                // ALOGN("read 不到");
+                usleep(30 * 1000);
             }
+
+            {
+                static int fcnt = 0;
+                static int fps = -1;
+                fcnt++;
+                static struct timespec ts1, ts2;
+                clock_gettime(CLOCK_MONOTONIC, &ts2);
+                if ((ts2.tv_sec * 1000 + ts2.tv_nsec / 1000000) - (ts1.tv_sec * 1000 + ts1.tv_nsec / 1000000) >= 1000)
+                {
+                    printf("%s => H26X FPS:%d     \r\n", "tips", fcnt);
+                    fps = fcnt;
+                    ts1 = ts2;
+                    fcnt = 0;
+                }
+            }
+
         }
         pipeline_buffer_t end_buf = {0};
         user_input(&pipelines[0], &end_buf);

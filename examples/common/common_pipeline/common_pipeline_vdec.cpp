@@ -29,39 +29,39 @@
 #include "string.h"
 #include "pthread.h"
 
-#if !VDEC_LINK_MODE
-void *_vdec_get_frame_thread(void *arg)
-{
-    pipeline_t *pipe = (pipeline_t *)arg;
-    AX_VIDEO_FRAME_INFO_S frameInfo = {0};
-    // AX_VIDEO_FRAME_S frame;
-    while (!pipe->n_loog_exit)
-    {
-        AX_S32 ret = AX_VDEC_GetFrame(pipe->n_vdec_grp, &frameInfo, 200);
-        if (ret != 0)
-        {
-            ALOGE("AX_VDEC_GetFrame 0x%x", ret);
-            usleep(50 * 1000);
-            continue;
-        }
-        // else
-        // {
+// #if !VDEC_LINK_MODE
+// void *_vdec_get_frame_thread(void *arg)
+// {
+//     pipeline_t *pipe = (pipeline_t *)arg;
+//     AX_VIDEO_FRAME_INFO_S frameInfo = {0};
+//     // AX_VIDEO_FRAME_S frame;
+//     while (!pipe->n_loog_exit)
+//     {
+//         AX_S32 ret = AX_VDEC_GetFrame(pipe->n_vdec_grp, &frameInfo, 200);
+//         if (ret != 0)
+//         {
+//             ALOGE("AX_VDEC_GetFrame 0x%x", ret);
+//             usleep(50 * 1000);
+//             continue;
+//         }
+//         // else
+//         // {
 
-        //     frameInfo.stVFrame.u64VirAddr[0] = (AX_U32)AX_POOL_GetBlockVirAddr(frameInfo.stVFrame.u32BlkId[0]);
-        //     frameInfo.stVFrame.u64PhyAddr[0] = AX_POOL_Handle2PhysAddr(frameInfo.stVFrame.u32BlkId[0]);
-        ALOGI("AX_VDEC_GetFrame success %d %d %d", frameInfo.stVFrame.u32Width, frameInfo.stVFrame.u32Height, frameInfo.stVFrame.enImgFormat);
-        // }
+//         //     frameInfo.stVFrame.u64VirAddr[0] = (AX_U32)AX_POOL_GetBlockVirAddr(frameInfo.stVFrame.u32BlkId[0]);
+//         //     frameInfo.stVFrame.u64PhyAddr[0] = AX_POOL_Handle2PhysAddr(frameInfo.stVFrame.u32BlkId[0]);
+//         ALOGI("AX_VDEC_GetFrame success %d %d %d", frameInfo.stVFrame.u32Width, frameInfo.stVFrame.u32Height, frameInfo.stVFrame.enImgFormat);
+//         // }
 
-        ret = AX_IVPS_SendFrame(pipe->m_ivps_attr.n_ivps_grp, &frameInfo.stVFrame, 200);
-        if (ret != 0)
-        {
-            ALOGE("AX_IVPS_SendFrame 0x%x", ret);
-        }
+//         ret = AX_IVPS_SendFrame(pipe->m_ivps_attr.n_ivps_grp, &frameInfo.stVFrame, 200);
+//         if (ret != 0)
+//         {
+//             ALOGE("AX_IVPS_SendFrame 0x%x", ret);
+//         }
 
-        AX_VDEC_ReleaseFrame(pipe->n_vdec_grp, &frameInfo);
-    }
-}
-#endif
+//         AX_VDEC_ReleaseFrame(pipe->n_vdec_grp, &frameInfo);
+//     }
+// }
+// #endif
 
 AX_S32 FramePoolInit(AX_VDEC_GRP VdGrp, AX_U32 FrameSize, AX_POOL *PoolId)
 {
@@ -112,9 +112,9 @@ int _create_vdec_grp(pipeline_t *pipe)
         gGrpAttr.u32PicHeight = 1080;
         gGrpAttr.u32StreamBufSize = 8 * 1024 * 1024;
         gGrpAttr.u32FrameBufCnt = 10;
-#if VDEC_LINK_MODE
-        gGrpAttr.enLinkMode = AX_LINK_MODE;
-#endif
+// #if VDEC_LINK_MODE
+//         gGrpAttr.enLinkMode = AX_LINK_MODE;
+// #endif
         AX_POOL s32PoolId;
         AX_U32 FrameSize = 0;
 
@@ -141,14 +141,14 @@ int _create_vdec_grp(pipeline_t *pipe)
             AX_VDEC_DestroyGrp(pipe->m_vdec_attr.n_vdec_grp);
             return -1;
         }
-#if !VDEC_LINK_MODE
-        pthread_t tid = 0;
-        if (0 != pthread_create(&tid, NULL, _vdec_get_frame_thread, pipe))
-        {
-            return -1;
-        }
-        pthread_detach(tid);
-#endif
+// #if !VDEC_LINK_MODE
+//         pthread_t tid = 0;
+//         if (0 != pthread_create(&tid, NULL, _vdec_get_frame_thread, pipe))
+//         {
+//             return -1;
+//         }
+//         pthread_detach(tid);
+// #endif
     }
     break;
     case pi_vdec_jpeg:
@@ -215,9 +215,9 @@ int _create_jvdec_grp(pipeline_t *pipe)
     gGrpAttr.u32PicHeight = 1080;
     gGrpAttr.u32StreamBufSize = 8 * 1024 * 1024;
     gGrpAttr.u32FrameBufCnt = 10;
-#if VDEC_LINK_MODE
-    gGrpAttr.enLinkMode = AX_LINK_MODE;
-#endif
+// #if VDEC_LINK_MODE
+//     gGrpAttr.enLinkMode = AX_LINK_MODE;
+// #endif
     AX_S32 ret = AX_VDEC_CreateGrp(pipe->m_vdec_attr.n_vdec_grp, &gGrpAttr);
     if (ret != AX_SUCCESS)
     {

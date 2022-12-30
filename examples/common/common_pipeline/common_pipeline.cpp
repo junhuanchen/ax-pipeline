@@ -272,17 +272,17 @@ int create_pipeline(pipeline_t *pipe)
             }
             pipeline_handle.vdec_grp.push_back(pipe->m_vdec_attr.n_vdec_grp);
         }
-#if VDEC_LINK_MODE
-        AX_MOD_INFO_S srcMod, dstMod;
-        srcMod.enModId = AX_ID_VDEC;
-        srcMod.s32GrpId = pipe->m_vdec_attr.n_vdec_grp;
-        srcMod.s32ChnId = 0;
+// #if VDEC_LINK_MODE
+//         AX_MOD_INFO_S srcMod, dstMod;
+//         srcMod.enModId = AX_ID_VDEC;
+//         srcMod.s32GrpId = pipe->m_vdec_attr.n_vdec_grp;
+//         srcMod.s32ChnId = 0;
 
-        dstMod.enModId = AX_ID_IVPS;
-        dstMod.s32GrpId = pipe->m_ivps_attr.n_ivps_grp;
-        dstMod.s32ChnId = 0;
-        AX_SYS_Link(&srcMod, &dstMod);
-#endif
+//         dstMod.enModId = AX_ID_IVPS;
+//         dstMod.s32GrpId = pipe->m_ivps_attr.n_ivps_grp;
+//         dstMod.s32ChnId = 0;
+//         AX_SYS_Link(&srcMod, &dstMod);
+// #endif
     }
     break;
     default:
@@ -596,20 +596,62 @@ int user_input(pipeline_t *pipe, pipeline_buffer_t *buf)
     break;
     case pi_vdec_jpeg:
     {
-        _create_jvdec_grp(pipe);
-        AX_VDEC_STREAM_S stream = {0};
-        int unsigned long long pts = 0;
-        stream.u64PTS = pts++;
-        stream.u32Len = buf->n_size;
-        stream.pu8Addr = (unsigned char *)buf->p_vir;
-        stream.bEndOfFrame = buf->p_vir == NULL ? AX_TRUE : AX_FALSE;
-        stream.bEndOfStream = buf->p_vir == NULL ? AX_TRUE : AX_FALSE;
-        int ret = AX_VDEC_SendStream(pipe->m_vdec_attr.n_vdec_grp, &stream, -1);
+        // _create_jvdec_grp(pipe);
+        // AX_VDEC_STREAM_S stream = {0};
+        // int unsigned long long pts = 0;
+        // stream.u64PTS = pts++;
+        // stream.u32Len = buf->n_size;
+        // stream.pu8Addr = (unsigned char *)buf->p_vir;
+        // stream.bEndOfFrame = buf->p_vir == NULL ? AX_TRUE : AX_FALSE;
+        // stream.bEndOfStream = buf->p_vir == NULL ? AX_TRUE : AX_FALSE;
+        // int ret = AX_VDEC_SendStream(pipe->m_vdec_attr.n_vdec_grp, &stream, -1);
+
+        AX_VIDEO_FRAME_INFO_S frameInfo = {0};
+
+        AX_U32 uiPicSize = (buf->n_width * buf->n_height) * 3/2;
+        AX_BLK blk_id = AX_POOL_GetBlock(frameInfo.u32PoolId, uiPicSize, NULL);
+        if (AX_INVALID_BLOCKID == blk_id) {
+            printf("AX_POOL_GetBlock AX_POOL_GetBlockfailed! \n");
+            return -1;
+        }
+
+        frameInfo.bEof = AX_TRUE;
+        frameInfo.enModId = AX_ID_IVPS;
+        frameInfo.stVFrame.u32BlkId[0] = blk_id;
+        frameInfo.stVFrame.u32Width = buf->n_width;
+        frameInfo.stVFrame.u32Height = buf->n_height;
+        frameInfo.stVFrame.enImgFormat = AX_YUV420_SEMIPLANAR;
+        frameInfo.stVFrame.enVscanFormat = AX_VSCAN_FORMAT_RASTER;
+        frameInfo.stVFrame.enCompressMode = AX_COMPRESS_MODE_NONE;
+        frameInfo.stVFrame.u64PhyAddr[0] = AX_POOL_Handle2PhysAddr(blk_id);
+        frameInfo.stVFrame.u64VirAddr[0] = (AX_U64)AX_POOL_GetBlockVirAddr(blk_id);
+        frameInfo.stVFrame.u32PicStride[0] = buf->n_width;
+        frameInfo.stVFrame.u64PhyAddr[1] = frameInfo.stVFrame.u64PhyAddr[0] + frameInfo.stVFrame.u32PicStride[0] * frameInfo.stVFrame.u32Height;
+        frameInfo.stVFrame.u64PhyAddr[2] = 0;
+        frameInfo.stVFrame.u64VirAddr[1] = frameInfo.stVFrame.u64VirAddr[0] + frameInfo.stVFrame.u32PicStride[0] * frameInfo.stVFrame.u32Height;
+        frameInfo.stVFrame.u64VirAddr[2] = 0;
+        frameInfo.u32PoolId = AX_POOL_Handle2PoolId(blk_id);
+
+        memcpy((void *)frameInfo.stVFrame.u64VirAddr[0], buf->p_vir, uiPicSize);
+
+        int ret = AX_IVPS_SendFrame(pipe->m_ivps_attr.n_ivps_grp, &frameInfo.stVFrame, 200);
         if (ret != 0)
         {
-            ALOGE("AX_VDEC_SendStream 0x%x", ret);
+            ALOGE("AX_IVPS_SendFrame 0x%x", ret);
         }
-        _destore_jvdec_grp(pipe);
+
+        AX_U32 PoolId = frameInfo.u32PoolId;
+
+        AX_BLK BlkId = frameInfo.stVFrame.u32BlkId[0];
+        ret = AX_POOL_ReleaseBlock(BlkId);
+        if(ret){
+            printf("AX_POOL_ReleaseBlock fail!Error Code:0x%X\n",ret);
+        }
+
+        // AX_VDEC_ReleaseFrame(pipe->m_vdec_attr.n_vdec_grp, &frameInfo);
+
+        // _destore_jvdec_grp(pipe);
+
     }
     break;
     default:

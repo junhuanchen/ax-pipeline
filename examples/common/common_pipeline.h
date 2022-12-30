@@ -21,9 +21,9 @@
 #ifndef _PIPELINE_COMMON_H_
 #define _PIPELINE_COMMON_H_
 
-#ifndef VDEC_LINK_MODE
-#define VDEC_LINK_MODE 1
-#endif
+// #ifndef VDEC_LINK_MODE
+// #define VDEC_LINK_MODE 1
+// #endif
 
 typedef enum
 {
@@ -150,7 +150,7 @@ extern "C"
     int create_pipeline(pipeline_t *pipe);
     int destory_pipeline(pipeline_t *pipe);
 
-    int user_input(pipeline_t *pipe, pipeline_buffer_t *buf); 
+    int user_input(pipeline_t *pipe, pipeline_buffer_t *buf);
 #if __cplusplus
 }
 #endif

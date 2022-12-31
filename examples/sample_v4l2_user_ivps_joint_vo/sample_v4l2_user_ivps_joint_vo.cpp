@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
                     buf_nv12.n_size = buf_mjpg.n_width * buf_mjpg.n_height * 3 / 2;
                     user_input(&pipelines[0], pipe_count, &buf_nv12);
                 }
-                // cap_get("libyuv::MJPGToNV12")
+                // cap_get("libyuv::MJPGToNV12");
             }
             else
             {

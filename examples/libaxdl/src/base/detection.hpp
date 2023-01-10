@@ -233,7 +233,7 @@ namespace detection
         }
     }
 
-    void get_out_bbox_yolopv2(std::vector<Object> &proposals, std::vector<Object> &objects, const float *da_ptr, const float *ll_ptr, cv::Mat &ll_seg_mask, cv::Mat &da_seg_mask, const float nms_threshold, int letterbox_rows, int letterbox_cols, int src_rows, int src_cols)
+    static void get_out_bbox_yolopv2(std::vector<Object> &proposals, std::vector<Object> &objects, const float *da_ptr, const float *ll_ptr, cv::Mat &ll_seg_mask, cv::Mat &da_seg_mask, const float nms_threshold, int letterbox_rows, int letterbox_cols, int src_rows, int src_cols)
     {
         qsort_descent_inplace(proposals);
         std::vector<int> picked;

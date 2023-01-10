@@ -170,6 +170,8 @@ int _sample_run_joint_inference_human_pose(sample_run_joint_models *pModels, con
             pResults->mObjects[0].landmark[j].y = y;
         }
     }
+    else
+        pResults->nObjSize = 0;
 
     for (int i = 0; i < pResults->nObjSize; i++)
     {
@@ -223,6 +225,8 @@ int _sample_run_joint_inference_animal_pose(sample_run_joint_models *pModels, co
         memcpy(&pResults->mObjects[0], &HumObj, sizeof(sample_run_joint_object));
         // memcpy(&pResults->mObjects[0].landmark[0], &HumObj.landmark[0], sizeof(HumObj.landmark));
     }
+    else
+        pResults->nObjSize = 0;
 
     for (int i = 0; i < pResults->nObjSize; i++)
     {
@@ -694,7 +698,7 @@ int sample_run_joint_parse_param(char *json_file_path, sample_run_joint_models *
     std::ifstream f(json_file_path);
     if (f.fail())
     {
-        return MT_UNKNOWN;
+        return -1;
     }
     auto jsondata = nlohmann::json::parse(f);
 

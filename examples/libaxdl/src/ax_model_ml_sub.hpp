@@ -24,7 +24,7 @@ protected:
     int post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) override;
 };
 
-class ax_model_pose_hrnet_animal_sub : public ax_model_ml_sub
+class ax_model_pose_hrnet_animal_sub : public ax_model_pose_hrnet_sub
 {
 protected:
     int post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) override;

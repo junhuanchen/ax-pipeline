@@ -147,50 +147,12 @@ int ax_model_pose_axppl_sub::post_process(const void *pstFrame, ax_joint_runner_
     return 0;
 }
 
-// int ax_model_pose_hrnet_animal::preprocess(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
-// {
-//     int ret;
-//     libaxdl_object_t &HumObj = results->mObjects[cur_idx];
-//     if (HumObj.bbox.w > 0 && HumObj.bbox.h > 0)
-//     {
-//         ret = m_runner.inference(pstFrame, crop_resize_box);
-//         if (ret != 0)
-//             return ret;
-//         ret = post_process(pstFrame, crop_resize_box, results);
-//         if (ret != 0)
-//             return ret;
-//     }
-// }
-
 int ax_model_pose_hrnet_animal_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
         mSimpleRingBuffer.resize(SAMPLE_RINGBUFFER_CACHE_COUNT);
     }
-    float scale_letterbox;
-    int resize_rows;
-    int resize_cols;
-    int letterbox_rows = get_algo_height();
-    int letterbox_cols = get_algo_width();
-    int src_rows = results->mObjects[cur_idx].bbox.h;
-    int src_cols = results->mObjects[cur_idx].bbox.w;
-    if ((letterbox_rows * 1.0 / src_rows) < (letterbox_cols * 1.0 / src_cols))
-    {
-        scale_letterbox = letterbox_rows * 1.0 / src_rows;
-    }
-    else
-    {
-        scale_letterbox = letterbox_cols * 1.0 / src_cols;
-    }
-    resize_cols = int(scale_letterbox * src_cols);
-    resize_rows = int(scale_letterbox * src_rows);
-
-    int tmp_h = (letterbox_rows - resize_rows) / 2;
-    int tmp_w = (letterbox_cols - resize_cols) / 2;
-
-    float ratio_x = (float)src_rows / resize_rows;
-    float ratio_y = (float)src_cols / resize_cols;
 
     pose::ai_body_parts_s ai_point_result;
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;
@@ -201,8 +163,18 @@ int ax_model_pose_hrnet_animal_sub::post_process(const void *pstFrame, ax_joint_
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_ANIMAL_LMK_SIZE; i++)
     {
-        results->mObjects[cur_idx].landmark[i].x = (ai_point_result.keypoints[i].x - tmp_w) * ratio_x + results->mObjects[cur_idx].bbox.x;
-        results->mObjects[cur_idx].landmark[i].y = (ai_point_result.keypoints[i].y - tmp_h) * ratio_y + results->mObjects[cur_idx].bbox.y;
+        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
+        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+        /*
+        [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
+        [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
+        [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
+        */
+        int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+        int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+
+        results->mObjects[cur_idx].landmark[i].x = x;
+        results->mObjects[cur_idx].landmark[i].y = y;
     }
     return 0;
 }

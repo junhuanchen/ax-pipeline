@@ -35,7 +35,6 @@ struct ax_model_handle_t
 
 int libaxdl_parse_param_init(char *json_file_path, void **pModels)
 {
-    OBJFactory::getInstance().print_obj();
     std::ifstream f(json_file_path);
     if (f.fail())
     {

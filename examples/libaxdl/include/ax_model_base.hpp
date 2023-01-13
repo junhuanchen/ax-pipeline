@@ -74,7 +74,7 @@ protected:
 
 public:
     // 当前处理的的对象在 results->mObjects 的索引（多级模型用）
-    int set_current_index(int idx) { cur_idx = idx; }
+    void set_current_index(int idx) { cur_idx = idx; }
     virtual void set_det_restore_resolution(int width, int height)
     {
         WIDTH_DET_BBOX_RESTORE = width;

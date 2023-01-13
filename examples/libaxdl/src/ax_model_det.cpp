@@ -903,3 +903,76 @@ int ax_model_nanodet::post_process(const void *pstFrame, ax_joint_runner_box_t *
     }
     return 0;
 }
+
+int ax_model_scrfd::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+{
+    if (mSimpleRingBuffer.size() == 0)
+    {
+        mSimpleRingBuffer.resize(SAMPLE_RINGBUFFER_CACHE_COUNT * SAMPLE_MAX_FACE_BBOX_COUNT);
+    }
+    std::vector<detection::Object> proposals;
+    std::vector<detection::Object> objects;
+    AX_U32 nOutputSize = m_runner->get_num_outputs();
+    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+
+    std::map<std::string, float *> output_map;
+    for (uint32_t i = 0; i < nOutputSize; i++)
+    {
+        output_map[pOutputsInfo[i].sName] = (float *)pOutputsInfo[i].pVirAddr;
+    }
+
+    int strides[] = {8, 16, 32};
+    const char *score_pred_name[] = {
+        "score_8", "score_16", "score_32"};
+    const char *bbox_pred_name[] = {
+        "bbox_8", "bbox_16", "bbox_32"};
+    const char *kps_pred_name[] = {
+        "kps_8", "kps_16", "kps_32"};
+    float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
+    for (int stride_index = 0; stride_index < 3; stride_index++)
+    {
+        float *score_pred = output_map[score_pred_name[stride_index]];
+        float *bbox_pred = output_map[bbox_pred_name[stride_index]];
+        float *kps_pred = output_map[kps_pred_name[stride_index]];
+
+        generate_proposals_scrfd(strides[stride_index], score_pred, bbox_pred, kps_pred, prob_threshold_unsigmoid, proposals, get_algo_height(), get_algo_width());
+    }
+
+    detection::get_out_bbox(proposals, objects, NMS_THRESHOLD, get_algo_height(), get_algo_width(), HEIGHT_DET_BBOX_RESTORE, WIDTH_DET_BBOX_RESTORE);
+    std::sort(objects.begin(), objects.end(),
+              [&](detection::Object &a, detection::Object &b)
+              {
+                  return a.rect.area() > b.rect.area();
+              });
+
+    results->nObjSize = MIN(objects.size(), SAMPLE_MAX_FACE_BBOX_COUNT);
+    for (size_t i = 0; i < results->nObjSize; i++)
+    {
+        const detection::Object &obj = objects[i];
+        results->mObjects[i].bbox.x = obj.rect.x;
+        results->mObjects[i].bbox.y = obj.rect.y;
+        results->mObjects[i].bbox.w = obj.rect.width;
+        results->mObjects[i].bbox.h = obj.rect.height;
+        results->mObjects[i].label = obj.label;
+        results->mObjects[i].prob = obj.prob;
+        results->mObjects[i].nLandmark = SAMPLE_FACE_LMK_SIZE;
+        std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+        points.resize(results->mObjects[i].nLandmark);
+        results->mObjects[i].landmark = points.data();
+        for (size_t j = 0; j < SAMPLE_FACE_LMK_SIZE; j++)
+        {
+            results->mObjects[i].landmark[j].x = obj.landmark[j].x;
+            results->mObjects[i].landmark[j].y = obj.landmark[j].y;
+        }
+
+        if (obj.label < CLASS_NAMES.size())
+        {
+            strcpy(results->mObjects[i].objname, CLASS_NAMES[obj.label].c_str());
+        }
+        else
+        {
+            strcpy(results->mObjects[i].objname, "unknown");
+        }
+    }
+    return 0;
+}

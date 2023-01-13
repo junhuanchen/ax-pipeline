@@ -115,3 +115,10 @@ protected:
     int post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) override;
 };
 REGISTER(MT_DET_NANODET, ax_model_nanodet)
+
+class ax_model_scrfd : public ax_model_yolov5_face
+{
+protected:
+    int post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) override;
+};
+REGISTER(MT_DET_SCRFD, ax_model_scrfd)

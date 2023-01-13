@@ -32,6 +32,7 @@ extern "C"
         MT_DET_PALM_HAND,
         MT_DET_YOLOPV2,
         MT_DET_YOLO_FASTBODY,
+        MT_DET_SCRFD,
 
         // segmentation
         MT_SEG = 0x20000,

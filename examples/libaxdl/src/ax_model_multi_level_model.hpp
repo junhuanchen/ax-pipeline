@@ -17,13 +17,10 @@ class ax_model_human_pose_hrnet : public ax_model_human_pose_axppl
 };
 REGISTER(MT_MLM_HUMAN_POSE_HRNET, ax_model_human_pose_hrnet)
 
-class ax_model_animal_pose_hrnet : public ax_model_multi_base_t
+class ax_model_animal_pose_hrnet : public ax_model_human_pose_axppl
 {
 protected:
     void draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y) override;
-
-public:
-    int inference(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) override;
 };
 REGISTER(MT_MLM_ANIMAL_POSE_HRNET, ax_model_animal_pose_hrnet)
 

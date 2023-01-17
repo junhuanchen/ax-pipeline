@@ -93,31 +93,29 @@ int ax_model_human_pose_axppl::inference(const void *pstFrame, ax_joint_runner_b
     int ret = model_0->inference(pstFrame, crop_resize_box, results);
     if (ret)
         return ret;
-    int idx = -1;
+    std::vector<int> idxs;
     for (int i = 0; i < results->nObjSize; i++)
     {
         auto it = std::find(CLASS_IDS.begin(), CLASS_IDS.end(), results->mObjects[i].label);
         if (it != CLASS_IDS.end())
         {
-            idx = i;
-            break;
+            idxs.push_back(i);
         }
     }
-
-    if (idx >= 0)
+    int count = MIN(idxs.size(), SAMPLE_MAX_POSE_COUNT);
+    for (int i = 0; i < idxs.size(); i++)
     {
+        int idx = idxs[i];
         model_1->set_current_index(idx);
         ret = model_1->inference(pstFrame, crop_resize_box, results);
         if (ret)
             return ret;
         if (idx != 0)
         {
-            memcpy(&results->mObjects[0], &results->mObjects[idx], sizeof(libaxdl_object_t));
+            memcpy(&results->mObjects[i], &results->mObjects[idx], sizeof(libaxdl_object_t));
         }
-        results->nObjSize = 1;
     }
-    else
-        results->nObjSize = 0;
+    results->nObjSize = count;
     return 0;
 }
 
@@ -151,39 +149,6 @@ void ax_model_animal_pose_hrnet::draw_custom(cv::Mat &image, libaxdl_results_t *
             draw_pose_result(image, &results->mObjects[i], pairs, SAMPLE_ANIMAL_LMK_SIZE, offset_x, offset_y);
         }
     }
-}
-
-int ax_model_animal_pose_hrnet::inference(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
-{
-    int ret = model_0->inference(pstFrame, crop_resize_box, results);
-    if (ret)
-        return ret;
-    int idx = -1;
-    for (int i = 0; i < results->nObjSize; i++)
-    {
-        auto it = std::find(CLASS_IDS.begin(), CLASS_IDS.end(), results->mObjects[i].label);
-        if (it != CLASS_IDS.end())
-        {
-            idx = i;
-            break;
-        }
-    }
-
-    if (idx >= 0)
-    {
-        model_1->set_current_index(idx);
-        ret = model_1->inference(pstFrame, crop_resize_box, results);
-        if (ret)
-            return ret;
-        if (idx != 0)
-        {
-            memcpy(&results->mObjects[0], &results->mObjects[idx], sizeof(libaxdl_object_t));
-        }
-        results->nObjSize = 1;
-    }
-    else
-        results->nObjSize = 0;
-    return 0;
 }
 
 void ax_model_hand_pose::draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)

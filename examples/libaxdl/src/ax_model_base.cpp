@@ -144,24 +144,19 @@ int ax_model_single_base_t::init(void *json_obj)
     update_val(jsondata, "CLASS_NUM", &CLASS_NUM);
     update_val(jsondata, "ANCHORS", &ANCHORS);
     update_val(jsondata, "CLASS_NAMES", &CLASS_NAMES);
-    update_val(jsondata, "MODEL_PATH", &m_model_path);
+    update_val(jsondata, "MODEL_PATH", &MODEL_PATH);
+    update_val(jsondata, "STRIDES", &STRIDES);
 
     std::string strModelType;
     m_model_type = (MODEL_TYPE_E)get_model_type(&jsondata, strModelType);
-    ALOGI("load model %s", m_model_path.c_str());
+    ALOGI("load model %s", MODEL_PATH.c_str());
     m_runner.reset(new ax_joint_runner_ax620);
-    m_runner->init(m_model_path.c_str());
+    m_runner->init(MODEL_PATH.c_str());
 
-    if (ANCHORS.size() != 18)
+    int unknown_cls_count = MAX(0, CLASS_NUM - CLASS_NAMES.size());
+    for (int i = 0; i < unknown_cls_count; i++)
     {
-        ALOGE("ANCHORS SIZE MUST BE 18\n");
-        return -1;
-    }
-
-    if (CLASS_NUM != CLASS_NAMES.size())
-    {
-        ALOGE("CLASS_NUM != CLASS_NAMES SIZE(%d:%d)\n", CLASS_NUM, CLASS_NAMES.size());
-        return -1;
+        CLASS_NAMES.push_back("unknown");
     }
     return 0;
 }

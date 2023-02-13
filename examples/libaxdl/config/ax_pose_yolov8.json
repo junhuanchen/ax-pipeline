@@ -11,6 +11,7 @@
     "MODEL_MAJOR": {
         "MODEL_TYPE": "MT_DET_YOLOV8",
         "MODEL_PATH": "./models/yolov8n.joint",
+        "STRIDES": [8, 16, 32],
         "CLASS_NAMES": [
             "person",
             "bicycle",

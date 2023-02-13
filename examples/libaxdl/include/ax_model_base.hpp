@@ -22,6 +22,7 @@ protected:
     std::vector<float> ANCHORS = {12, 16, 19, 36, 40, 28,
                                   36, 75, 76, 55, 72, 146,
                                   142, 110, 192, 243, 459, 401};
+    std::vector<int> STRIDES = {8, 16, 32};
     std::vector<std::string> CLASS_NAMES = {
         "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
         "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
@@ -106,6 +107,10 @@ public:
 
     std::vector<float> get_anchors() { return ANCHORS; }
 
+    void set_strides(std::vector<int> &strides) { STRIDES = strides; }
+
+    std::vector<int> get_strides() { return STRIDES; }
+
     void set_class_names(std::vector<std::string> &class_namse) { CLASS_NAMES = class_namse; }
 
     std::vector<std::string> get_class_names() { return CLASS_NAMES; }
@@ -137,7 +142,7 @@ class ax_model_single_base_t : public ax_model_base
 {
 protected:
     std::shared_ptr<ax_joint_runner_base> m_runner;
-    std::string m_model_path;
+    std::string MODEL_PATH;
 
     AX_NPU_CV_Image dstFrame = {0};
     bool bMalloc = false;

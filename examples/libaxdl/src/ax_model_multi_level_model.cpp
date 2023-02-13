@@ -270,7 +270,7 @@ int ax_model_face_recognition::inference(const void *pstFrame, ax_joint_runner_b
     if (ret)
         return ret;
 
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         model_1->set_current_index(i);
         ret = model_1->inference(pstFrame, crop_resize_box, results);
@@ -307,12 +307,12 @@ int ax_model_face_recognition::inference(const void *pstFrame, ax_joint_runner_b
             }
             else
             {
-                sprintf(results->mObjects[i].objname, "unknow");
+                sprintf(results->mObjects[i].objname, "unknown");
             }
         }
         else
         {
-            sprintf(results->mObjects[i].objname, "unknow");
+            sprintf(results->mObjects[i].objname, "unknown");
         }
     }
 
@@ -325,7 +325,7 @@ int ax_model_vehicle_license_recognition::inference(const void *pstFrame, ax_joi
     if (ret)
         return ret;
 
-    for (size_t i = 0; i < results->nObjSize; i++)
+    for (int i = 0; i < results->nObjSize; i++)
     {
         model_1->set_current_index(i);
         ret = model_1->inference(pstFrame, crop_resize_box, results);

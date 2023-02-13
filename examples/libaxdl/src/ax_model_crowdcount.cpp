@@ -43,7 +43,7 @@ static void shift(int w, int h, int stride, std::vector<float> anchor_points, st
     shifted_anchor_points.resize(2 * w * h * anchor_points.size() / 2, 0);
     for (int i = 0; i < w * h; i++)
     {
-        for (int j = 0; j < anchor_points.size() / 2; j++)
+        for (int j = 0; j < (int)anchor_points.size() / 2; j++)
         {
             float x = anchor_points[j * 2] + shifts[i * 2];
             float y = anchor_points[j * 2 + 1] + shifts[i * 2 + 1];
@@ -97,7 +97,7 @@ static void generate_anchor_points(int img_w, int img_h, std::vector<int> pyrami
 
     std::vector<std::pair<int, int>> image_shapes;
     std::vector<int> strides;
-    for (int i = 0; i < pyramid_levels.size(); i++)
+    for (int i = 0; i < (int)pyramid_levels.size(); i++)
     {
         int new_h = std::floor((img_h + std::pow(2, pyramid_levels[i]) - 1) / std::pow(2, pyramid_levels[i]));
         int new_w = std::floor((img_w + std::pow(2, pyramid_levels[i]) - 1) / std::pow(2, pyramid_levels[i]));
@@ -106,7 +106,7 @@ static void generate_anchor_points(int img_w, int img_h, std::vector<int> pyrami
     }
 
     all_anchor_points.clear();
-    for (int i = 0; i < pyramid_levels.size(); i++)
+    for (int i = 0; i < (int)pyramid_levels.size(); i++)
     {
         std::vector<float> anchor_points;
         generate_anchor_points(std::pow(2, pyramid_levels[i]), row, line, anchor_points);
@@ -153,7 +153,7 @@ int ax_model_crowdcount::post_process(const void *pstFrame, ax_joint_runner_box_
     float ratio_x = (float)src_rows / resize_rows;
     float ratio_y = (float)src_cols / resize_cols;
 
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
+    // AX_U32 nOutputSize = m_runner->get_num_outputs();
     const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     libaxdl_point_t *pred_points_ptr = (libaxdl_point_t *)pOutputsInfo[0].pVirAddr;

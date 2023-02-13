@@ -13,6 +13,7 @@
     "MODEL_MAJOR": {
         "MODEL_TYPE": "MT_DET_YOLOV5_FACE",
         "MODEL_PATH": "./models/yolov5s_face_rgb_11.joint",
+        "STRIDES": [8, 16, 32],
         "ANCHORS": [
             4,
             5,

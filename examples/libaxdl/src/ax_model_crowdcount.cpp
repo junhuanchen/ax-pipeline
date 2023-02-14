@@ -116,7 +116,7 @@ static void generate_anchor_points(int img_w, int img_h, std::vector<int> pyrami
     }
 }
 
-int ax_model_crowdcount::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_crowdcount::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (width_anchor != get_algo_width() || height_anchor != get_algo_height())
     {
@@ -154,14 +154,14 @@ int ax_model_crowdcount::post_process(const void *pstFrame, ax_joint_runner_box_
     float ratio_y = (float)src_cols / resize_cols;
 
     // AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
-    libaxdl_point_t *pred_points_ptr = (libaxdl_point_t *)pOutputsInfo[0].pVirAddr;
-    libaxdl_point_t *pred_scores_ptr = (libaxdl_point_t *)pOutputsInfo[1].pVirAddr;
+    axdl_point_t *pred_points_ptr = (axdl_point_t *)pOutputsInfo[0].pVirAddr;
+    axdl_point_t *pred_scores_ptr = (axdl_point_t *)pOutputsInfo[1].pVirAddr;
 
     int len = pOutputsInfo[0].nSize / sizeof(float) / 2;
 
-    libaxdl_point_t *anchor_points_ptr = (libaxdl_point_t *)all_anchor_points.data();
+    axdl_point_t *anchor_points_ptr = (axdl_point_t *)all_anchor_points.data();
 
     std::vector<float> _softmax_result(2, 0);
 
@@ -176,7 +176,7 @@ int ax_model_crowdcount::post_process(const void *pstFrame, ax_joint_runner_box_
             detection::softmax(&pred_scores_ptr[i].x, _softmax_result.data(), 2);
             if (_softmax_result[1] > PROB_THRESHOLD)
             {
-                libaxdl_point_t p;
+                axdl_point_t p;
                 p.x = pred_points_ptr[i].x * 100 + anchor_points_ptr[i].x;
                 p.y = pred_points_ptr[i].y * 100 + anchor_points_ptr[i].y;
 
@@ -193,7 +193,7 @@ int ax_model_crowdcount::post_process(const void *pstFrame, ax_joint_runner_box_
     return 0;
 }
 
-void ax_model_crowdcount::draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
+void ax_model_crowdcount::draw_custom(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
 {
     sprintf(info, "real-time count of people:%d", results->nCrowdCount);
     cv::Size label_size = cv::getTextSize(info, cv::FONT_HERSHEY_SIMPLEX, fontscale * 1.5, thickness * 2, NULL);

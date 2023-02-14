@@ -6,8 +6,6 @@
 #include "string"
 #include "memory"
 
-#include "npu_cv_kit/ax_npu_imgproc.h"
-
 #include "opencv2/opencv.hpp"
 
 class ax_model_base
@@ -67,9 +65,9 @@ protected:
     int cur_idx = 0;
 
     char fps_info[128];
-    void draw_bbox(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y);
-    void draw_fps(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y);
-    virtual void draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
+    void draw_bbox(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y);
+    void draw_fps(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y);
+    virtual void draw_custom(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
     {
         draw_bbox(image, results, fontscale, thickness, offset_x, offset_y);
     }
@@ -130,8 +128,8 @@ public:
     virtual int get_color_space() = 0;
     virtual int get_algo_width() = 0;
     virtual int get_algo_height() = 0;
-    virtual int inference(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) = 0;
-    virtual void draw_results(cv::Mat&canvas, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
+    virtual int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) = 0;
+    virtual void draw_results(cv::Mat&canvas, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
     {
         draw_custom(canvas, results, fontscale, thickness, offset_x, offset_y);
         draw_fps(canvas, results, fontscale, thickness, offset_x, offset_y);
@@ -141,14 +139,14 @@ public:
 class ax_model_single_base_t : public ax_model_base
 {
 protected:
-    std::shared_ptr<ax_joint_runner_base> m_runner;
+    std::shared_ptr<ax_runner_base> m_runner;
     std::string MODEL_PATH;
 
-    AX_NPU_CV_Image dstFrame = {0};
+    axdl_image_t dstFrame = {0};
     bool bMalloc = false;
 
-    virtual int preprocess(const void *srcFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results);
-    virtual int post_process(const void *srcFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) = 0;
+    virtual int preprocess(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results);
+    virtual int post_process(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) = 0;
 
 public:
     virtual int init(void *json_obj) override;
@@ -158,7 +156,7 @@ public:
     int get_algo_width() override { return m_runner->get_algo_width(); }
     int get_algo_height() override { return m_runner->get_algo_height(); }
 
-    virtual int inference(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results) override;
+    virtual int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
 };
 
 class ax_model_multi_base_t : public ax_model_base

@@ -3,13 +3,15 @@
 
 #include "sample_run_joint.h"
 
+#include "npu_cv_kit/ax_npu_imgproc.h"
+
 struct ax_joint_runner_ax620_handle_t
 {
     void *m_handle = nullptr;
     sample_run_joint_attr m_attr = {0};
 };
 
-int ax_joint_runner_ax620::init(const char *model_file)
+int ax_runner_ax620::init(const char *model_file)
 {
     if (m_handle)
     {
@@ -23,7 +25,7 @@ int ax_joint_runner_ax620::init(const char *model_file)
     }
     for (size_t i = 0; i < m_handle->m_attr.nOutputSize; i++)
     {
-        ax_joint_runner_tensor_t tensor;
+        ax_runner_tensor_t tensor;
         tensor.nIdx = i;
         tensor.sName = std::string(m_handle->m_attr.pOutputsInfo[i].pName);
         tensor.nSize = m_handle->m_attr.pOutputsInfo[i].nSize;
@@ -39,7 +41,7 @@ int ax_joint_runner_ax620::init(const char *model_file)
     return ret;
 }
 
-void ax_joint_runner_ax620::deinit()
+void ax_runner_ax620::deinit()
 {
     if (m_handle && m_handle->m_handle)
     {
@@ -49,11 +51,15 @@ void ax_joint_runner_ax620::deinit()
     m_handle = nullptr;
 }
 
-int ax_joint_runner_ax620::get_algo_width() { return m_handle->m_attr.algo_width; }
-int ax_joint_runner_ax620::get_algo_height() { return m_handle->m_attr.algo_height; }
-int ax_joint_runner_ax620::get_color_space() { return m_handle->m_attr.algo_colorformat; }
+int ax_runner_ax620::get_algo_width() { return m_handle->m_attr.algo_width; }
+int ax_runner_ax620::get_algo_height() { return m_handle->m_attr.algo_height; }
+int ax_runner_ax620::get_color_space() { return m_handle->m_attr.algo_colorformat; }
 
-int ax_joint_runner_ax620::inference(const void *pstFrame, const ax_joint_runner_box_t *crop_resize_box)
+void cvt(axdl_image_t *src, AX_NPU_CV_Image *dst);
+
+int ax_runner_ax620::inference(axdl_image_t *pstFrame, const ax_runner_box_t *crop_resize_box)
 {
-    return sample_run_joint_inference(m_handle->m_handle, pstFrame, crop_resize_box);
+    AX_NPU_CV_Image npu_image;
+    cvt(pstFrame, &npu_image);
+    return sample_run_joint_inference(m_handle->m_handle, &npu_image, crop_resize_box);
 }

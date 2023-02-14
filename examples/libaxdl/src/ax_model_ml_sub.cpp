@@ -4,28 +4,29 @@
 #include "../../utilities/sample_log.h"
 #include "utilities/mat_pixel_affine.h"
 
-#include "ax_sys_api.h"
+// #include "ax_sys_api.h"
+#include "ax_common_api.h"
 
-int ax_model_pose_hrnet_sub::preprocess(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     int ret;
-    libaxdl_object_t &HumObj = results->mObjects[cur_idx];
+    axdl_object_t &HumObj = results->mObjects[cur_idx];
 
     if (HumObj.bbox.w > 0 && HumObj.bbox.h > 0)
     {
         if (!dstFrame.pVir)
         {
-            dstFrame.eDtype = ((AX_NPU_CV_Image *)pstFrame)->eDtype;
+            dstFrame.eDtype = pstFrame->eDtype;
             dstFrame.nHeight = get_algo_height();
             dstFrame.nWidth = get_algo_width();
-            dstFrame.tStride.nW = dstFrame.nWidth;
-            if (dstFrame.eDtype == AX_NPU_CV_FDT_NV12)
+            dstFrame.tStride_W = dstFrame.nWidth;
+            if (dstFrame.eDtype == libaxdl_color_space_nv12)
             {
                 dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3 / 2;
             }
-            else if (dstFrame.eDtype == AX_NPU_CV_FDT_RGB || dstFrame.eDtype == AX_NPU_CV_FDT_BGR)
+            else if (dstFrame.eDtype == libaxdl_color_space_rgb || dstFrame.eDtype == libaxdl_color_space_bgr)
             {
-                dstFrame.eDtype = AX_NPU_CV_FDT_BGR;
+                dstFrame.eDtype = libaxdl_color_space_bgr;
                 dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3;
             }
             else
@@ -33,7 +34,7 @@ int ax_model_pose_hrnet_sub::preprocess(const void *pstFrame, ax_joint_runner_bo
                 ALOGE("just only support nv12/rgb/bgr format\n");
                 return -1;
             }
-            AX_SYS_MemAlloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, dstFrame.nSize, 0x100, NULL);
+            ax_sys_memalloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, dstFrame.nSize, 0x100, NULL);
             bMalloc = true;
         }
 
@@ -74,7 +75,7 @@ int ax_model_pose_hrnet_sub::preprocess(const void *pstFrame, ax_joint_runner_bo
             {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
             {0, 0, 1}};
         // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-        ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, (AX_NPU_CV_Image *)pstFrame, &dstFrame, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
+        ret = ax_npu_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
         if (ret != 0)
         {
             return ret;
@@ -85,7 +86,7 @@ int ax_model_pose_hrnet_sub::preprocess(const void *pstFrame, ax_joint_runner_bo
     return 0;
 }
 
-int ax_model_pose_hrnet_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_pose_hrnet_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -95,7 +96,7 @@ int ax_model_pose_hrnet_sub::post_process(const void *pstFrame, ax_joint_runner_
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;
     pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_BODY_LMK_SIZE, get_algo_height(), get_algo_width());
     results->mObjects[cur_idx].nLandmark = SAMPLE_BODY_LMK_SIZE;
-    std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+    std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
@@ -116,7 +117,7 @@ int ax_model_pose_hrnet_sub::post_process(const void *pstFrame, ax_joint_runner_
     return 0;
 }
 
-int ax_model_pose_axppl_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_pose_axppl_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -127,7 +128,7 @@ int ax_model_pose_axppl_sub::post_process(const void *pstFrame, ax_joint_runner_
     auto ptr_index = (float *)m_runner->get_output(1).pVirAddr;
     pose::ppl_pose_post_process(ptr, ptr_index, ai_point_result, SAMPLE_BODY_LMK_SIZE);
     results->mObjects[cur_idx].nLandmark = SAMPLE_BODY_LMK_SIZE;
-    std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+    std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
@@ -148,7 +149,7 @@ int ax_model_pose_axppl_sub::post_process(const void *pstFrame, ax_joint_runner_
     return 0;
 }
 
-int ax_model_pose_hrnet_animal_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_pose_hrnet_animal_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -159,7 +160,7 @@ int ax_model_pose_hrnet_animal_sub::post_process(const void *pstFrame, ax_joint_
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;
     pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_ANIMAL_LMK_SIZE, get_algo_height(), get_algo_width());
     results->mObjects[cur_idx].nLandmark = SAMPLE_ANIMAL_LMK_SIZE;
-    std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+    std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_ANIMAL_LMK_SIZE; i++)
@@ -180,20 +181,21 @@ int ax_model_pose_hrnet_animal_sub::post_process(const void *pstFrame, ax_joint_
     return 0;
 }
 
-int ax_model_pose_hand_sub::preprocess(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_pose_hand_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (!dstFrame.pVir)
     {
-        dstFrame.eDtype = ((AX_NPU_CV_Image *)pstFrame)->eDtype;
+        dstFrame.eDtype = pstFrame->eDtype;
         dstFrame.nHeight = get_algo_height();
         dstFrame.nWidth = get_algo_width();
-        dstFrame.tStride.nW = dstFrame.nWidth;
-        if (dstFrame.eDtype == AX_NPU_CV_FDT_NV12)
+        dstFrame.tStride_W = dstFrame.nWidth;
+        if (dstFrame.eDtype == libaxdl_color_space_nv12)
         {
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3 / 2;
         }
-        else if (dstFrame.eDtype == AX_NPU_CV_FDT_RGB || dstFrame.eDtype == AX_NPU_CV_FDT_BGR)
+        else if (dstFrame.eDtype == libaxdl_color_space_rgb || dstFrame.eDtype == libaxdl_color_space_bgr)
         {
+            dstFrame.eDtype = libaxdl_color_space_bgr;
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3;
         }
         else
@@ -201,10 +203,10 @@ int ax_model_pose_hand_sub::preprocess(const void *pstFrame, ax_joint_runner_box
             ALOGE("just only support nv12/rgb/bgr format\n");
             return -1;
         }
-        AX_SYS_MemAlloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, dstFrame.nSize, 0x100, NULL);
+        ax_sys_memalloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, dstFrame.nSize, 0x100, NULL);
         bMalloc = true;
     }
-    libaxdl_object_t &object = results->mObjects[cur_idx];
+    axdl_object_t &object = results->mObjects[cur_idx];
 
     cv::Point2f src_pts[4];
     src_pts[0] = cv::Point2f(object.bbox_vertices[0].x, object.bbox_vertices[0].y);
@@ -227,13 +229,13 @@ int ax_model_pose_hand_sub::preprocess(const void *pstFrame, ax_joint_runner_box
         {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
         {0, 0, 1}};
     // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-    int ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, (AX_NPU_CV_Image *)pstFrame, &dstFrame, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
+    int ret = ax_npu_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
     if (ret)
         return ret;
     return 0;
 }
 
-int ax_model_pose_hand_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_pose_hand_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -246,7 +248,7 @@ int ax_model_pose_hand_sub::post_process(const void *pstFrame, ax_joint_runner_b
     auto score_ptr = (float *)info_score.pVirAddr;
     pose::post_process_hand(point_ptr, score_ptr, ai_hand_point_result, SAMPLE_HAND_LMK_SIZE, get_algo_height(), get_algo_width());
     results->mObjects[cur_idx].nLandmark = SAMPLE_HAND_LMK_SIZE;
-    std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+    std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_HAND_LMK_SIZE; i++)
@@ -266,47 +268,47 @@ int ax_model_pose_hand_sub::post_process(const void *pstFrame, ax_joint_runner_b
     return 0;
 }
 
-void align_face(libaxdl_object_t &obj, AX_NPU_CV_Image *npu_image, AX_NPU_CV_Image &npu_image_face_align)
-{
-    // static float target[10] = {30.2946, 51.6963,
-    //                            65.5318, 51.5014,
-    //                            48.0252, 71.7366,
-    //                            33.5493, 92.3655,
-    //                            62.7299, 92.2041};
-    static float target[10] = {38.2946, 51.6963,
-                               73.5318, 51.5014,
-                               56.0252, 71.7366,
-                               41.5493, 92.3655,
-                               70.7299, 92.2041};
-    float _tmp[10] = {obj.landmark[0].x, obj.landmark[0].y,
-                      obj.landmark[1].x, obj.landmark[1].y,
-                      obj.landmark[2].x, obj.landmark[2].y,
-                      obj.landmark[3].x, obj.landmark[3].y,
-                      obj.landmark[4].x, obj.landmark[4].y};
-    float _m[6], _m_inv[6];
-    get_affine_transform(_tmp, target, 5, _m);
-    invert_affine_transform(_m, _m_inv);
+// void align_face(libaxdl_object_t &obj, AX_NPU_CV_Image *npu_image, AX_NPU_CV_Image &npu_image_face_align)
+// {
+//     // static float target[10] = {30.2946, 51.6963,
+//     //                            65.5318, 51.5014,
+//     //                            48.0252, 71.7366,
+//     //                            33.5493, 92.3655,
+//     //                            62.7299, 92.2041};
+//     static float target[10] = {38.2946, 51.6963,
+//                                73.5318, 51.5014,
+//                                56.0252, 71.7366,
+//                                41.5493, 92.3655,
+//                                70.7299, 92.2041};
+//     float _tmp[10] = {obj.landmark[0].x, obj.landmark[0].y,
+//                       obj.landmark[1].x, obj.landmark[1].y,
+//                       obj.landmark[2].x, obj.landmark[2].y,
+//                       obj.landmark[3].x, obj.landmark[3].y,
+//                       obj.landmark[4].x, obj.landmark[4].y};
+//     float _m[6], _m_inv[6];
+//     get_affine_transform(_tmp, target, 5, _m);
+//     invert_affine_transform(_m, _m_inv);
 
-    float mat3x3[3][3] = {
-        {_m_inv[0], _m_inv[1], _m_inv[2]},
-        {_m_inv[3], _m_inv[4], _m_inv[5]},
-        {0, 0, 1}};
-    // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-    npu_image_face_align.eDtype = npu_image->eDtype;
-    if (npu_image_face_align.eDtype == AX_NPU_CV_FDT_RGB || npu_image_face_align.eDtype == AX_NPU_CV_FDT_BGR)
-    {
-        npu_image_face_align.nSize = 112 * 112 * 3;
-    }
-    else if (npu_image_face_align.eDtype == AX_NPU_CV_FDT_NV12 || npu_image_face_align.eDtype == AX_NPU_CV_FDT_NV21)
-    {
-        npu_image_face_align.nSize = 112 * 112 * 1.5;
-    }
-    else
-    {
-        ALOGE("just only support BGR/RGB/NV12 format");
-    }
-    int ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, npu_image, &npu_image_face_align, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
-}
+//     float mat3x3[3][3] = {
+//         {_m_inv[0], _m_inv[1], _m_inv[2]},
+//         {_m_inv[3], _m_inv[4], _m_inv[5]},
+//         {0, 0, 1}};
+//     // //这里要用AX_NPU_MODEL_TYPE_1_1_2
+//     npu_image_face_align.eDtype = npu_image->eDtype;
+//     if (npu_image_face_align.eDtype == AX_NPU_CV_FDT_RGB || npu_image_face_align.eDtype == AX_NPU_CV_FDT_BGR)
+//     {
+//         npu_image_face_align.nSize = 112 * 112 * 3;
+//     }
+//     else if (npu_image_face_align.eDtype == AX_NPU_CV_FDT_NV12 || npu_image_face_align.eDtype == AX_NPU_CV_FDT_NV21)
+//     {
+//         npu_image_face_align.nSize = 112 * 112 * 1.5;
+//     }
+//     else
+//     {
+//         ALOGE("just only support BGR/RGB/NV12 format");
+//     }
+//     int ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, npu_image, &npu_image_face_align, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
+// }
 
 void ax_model_face_feat_extactor_sub::_normalize(float *feature, int feature_len)
 {
@@ -318,20 +320,20 @@ void ax_model_face_feat_extactor_sub::_normalize(float *feature, int feature_len
         feature[it] /= sum;
 }
 
-int ax_model_face_feat_extactor_sub::preprocess(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_face_feat_extactor_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (!dstFrame.pVir)
     {
-        dstFrame.nWidth = dstFrame.nHeight = dstFrame.tStride.nW = 112;
-        AX_SYS_MemAlloc((AX_U64 *)&dstFrame.pPhy, (void **)&dstFrame.pVir, 112 * 112 * 3, 0x100, (AX_S8 *)"SAMPLE-CV");
+        dstFrame.nWidth = dstFrame.nHeight = dstFrame.tStride_W = 112;
+        ax_sys_memalloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, 112 * 112 * 3, 0x100, "SAMPLE-CV");
         bMalloc = true;
     }
-    libaxdl_object_t &obj = results->mObjects[cur_idx];
-    align_face(obj, (AX_NPU_CV_Image *)pstFrame, dstFrame);
+    axdl_object_t &obj = results->mObjects[cur_idx];
+    ax_align_face(&obj, pstFrame, &dstFrame);
     return 0;
 }
 
-int ax_model_face_feat_extactor_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_face_feat_extactor_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer_FaceFeat.size() == 0)
     {
@@ -347,20 +349,21 @@ int ax_model_face_feat_extactor_sub::post_process(const void *pstFrame, ax_joint
     return 0;
 }
 
-int ax_model_license_plate_recognition_sub::preprocess(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_license_plate_recognition_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (!dstFrame.pVir)
     {
-        dstFrame.eDtype = ((AX_NPU_CV_Image *)pstFrame)->eDtype;
+        dstFrame.eDtype = pstFrame->eDtype;
         dstFrame.nHeight = get_algo_height();
         dstFrame.nWidth = get_algo_width();
-        dstFrame.tStride.nW = dstFrame.nWidth;
-        if (dstFrame.eDtype == AX_NPU_CV_FDT_NV12)
+        dstFrame.tStride_W = dstFrame.nWidth;
+        if (dstFrame.eDtype == libaxdl_color_space_nv12)
         {
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3 / 2;
         }
-        else if (dstFrame.eDtype == AX_NPU_CV_FDT_RGB || dstFrame.eDtype == AX_NPU_CV_FDT_BGR)
+        else if (dstFrame.eDtype == libaxdl_color_space_rgb || dstFrame.eDtype == libaxdl_color_space_bgr)
         {
+            dstFrame.eDtype = libaxdl_color_space_bgr;
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3;
         }
         else
@@ -368,10 +371,10 @@ int ax_model_license_plate_recognition_sub::preprocess(const void *pstFrame, ax_
             ALOGE("just only support nv12/rgb/bgr format\n");
             return -1;
         }
-        AX_SYS_MemAlloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, dstFrame.nSize, 0x100, NULL);
+        ax_sys_memalloc(&dstFrame.pPhy, (void **)&dstFrame.pVir, dstFrame.nSize, 0x100, NULL);
         bMalloc = true;
     }
-    libaxdl_object_t &object = results->mObjects[cur_idx];
+    axdl_object_t &object = results->mObjects[cur_idx];
     cv::Point2f src_pts[4];
     src_pts[0] = cv::Point2f(object.bbox_vertices[0].x, object.bbox_vertices[0].y);
     src_pts[1] = cv::Point2f(object.bbox_vertices[1].x, object.bbox_vertices[1].y);
@@ -393,7 +396,7 @@ int ax_model_license_plate_recognition_sub::preprocess(const void *pstFrame, ax_
         {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
         {0, 0, 1}};
     // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-    int ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, (AX_NPU_CV_Image *)pstFrame, &dstFrame, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
+    int ret = ax_npu_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
     if (ret != 0)
     {
         return ret;
@@ -401,7 +404,7 @@ int ax_model_license_plate_recognition_sub::preprocess(const void *pstFrame, ax_
     return 0;
 }
 
-int ax_model_license_plate_recognition_sub::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_license_plate_recognition_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     static const std::vector<std::string> plate_string = {
         // "#", "京", "沪", "津", "渝", "冀", "晋", "蒙", "辽", "吉", "黑", "苏", "浙", "皖",

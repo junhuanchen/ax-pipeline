@@ -10,7 +10,7 @@
 extern "C"
 {
     // 给sipeed的python包用的
-    typedef int (*result_callback_for_sipeed_py)(void *, libaxdl_results_t *);
+    typedef int (*result_callback_for_sipeed_py)(void *, axdl_results_t *);
     result_callback_for_sipeed_py g_cb_results_sipeed_py = NULL;
     int register_result_callback(result_callback_for_sipeed_py cb)
     {
@@ -33,11 +33,12 @@ struct ax_model_handle_t
     std::shared_ptr<ax_model_base> model = nullptr;
 };
 
-int libaxdl_parse_param_init(char *json_file_path, void **pModels)
+int axdl_parse_param_init(char *json_file_path, void **pModels)
 {
     std::ifstream f(json_file_path);
     if (f.fail())
     {
+        ALOGE("json file [%s] is not exist.", json_file_path);
         return -1;
     }
     auto jsondata = nlohmann::json::parse(f);
@@ -61,7 +62,7 @@ int libaxdl_parse_param_init(char *json_file_path, void **pModels)
     return ((ax_model_handle_t *)(*pModels))->model->init(&jsondata);
 }
 
-void libaxdl_deinit(void **pModels)
+void axdl_deinit(void **pModels)
 {
     if (pModels && (ax_model_handle_t *)(*pModels) && ((ax_model_handle_t *)(*pModels))->model.get())
     {
@@ -71,7 +72,7 @@ void libaxdl_deinit(void **pModels)
     }
 }
 
-int libaxdl_get_ivps_width_height(void *pModels, char *json_file_path, int *width_ivps, int *height_ivps)
+int axdl_get_ivps_width_height(void *pModels, char *json_file_path, int *width_ivps, int *height_ivps)
 {
     if (!(ax_model_handle_t *)(pModels) || !((ax_model_handle_t *)(pModels))->model.get())
     {
@@ -113,7 +114,7 @@ int libaxdl_get_ivps_width_height(void *pModels, char *json_file_path, int *widt
     }
     return 0;
 }
-int libaxdl_get_color_space(void *pModels)
+int axdl_get_color_space(void *pModels)
 {
     if (!(ax_model_handle_t *)(pModels) || !((ax_model_handle_t *)(pModels))->model.get())
     {
@@ -121,7 +122,7 @@ int libaxdl_get_color_space(void *pModels)
     }
     return ((ax_model_handle_t *)pModels)->model->get_color_space();
 }
-int libaxdl_get_model_type(void *pModels)
+int axdl_get_model_type(void *pModels)
 {
     if (!(ax_model_handle_t *)(pModels) || !((ax_model_handle_t *)(pModels))->model.get())
     {
@@ -130,7 +131,7 @@ int libaxdl_get_model_type(void *pModels)
     return ((ax_model_handle_t *)pModels)->model->get_model_type();
 }
 
-int libaxdl_inference(void *pModels, const void *pstFrame, libaxdl_results_t *pResults)
+int axdl_inference(void *pModels, axdl_image_t *pstFrame, axdl_results_t *pResults)
 {
     static std::mutex locker;
     locker.lock();
@@ -205,7 +206,7 @@ int libaxdl_inference(void *pModels, const void *pstFrame, libaxdl_results_t *pR
     return state;
 }
 
-int libaxdl_draw_results(void *pModels, libaxdl_canvas_t *canvas, libaxdl_results_t *pResults, float fontscale, int thickness, int offset_x, int offset_y)
+int axdl_draw_results(void *pModels, axdl_canvas_t *canvas, axdl_results_t *pResults, float fontscale, int thickness, int offset_x, int offset_y)
 {
     if (!(ax_model_handle_t *)(pModels) || !((ax_model_handle_t *)(pModels))->model.get())
     {

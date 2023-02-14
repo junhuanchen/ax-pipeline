@@ -1,5 +1,5 @@
-#ifndef _POST_PROCESS_H_
-#define _POST_PROCESS_H_
+#ifndef _AXDL_H_
+#define _AXDL_H_
 
 #ifdef __cplusplus
 extern "C"
@@ -60,24 +60,24 @@ extern "C"
     typedef struct _bbox_t
     {
         float x, y, w, h;
-    } libaxdl_bbox_t;
+    } axdl_bbox_t;
 
     typedef struct _point_t
     {
         float x, y;
-    } libaxdl_point_t;
+    } axdl_point_t;
 
     typedef struct _mat_t
     {
         int w, h;
         unsigned char *data;
-    } libaxdl_mat_t;
+    } axdl_mat_t;
 
     typedef struct _object_t
     {
-        libaxdl_bbox_t bbox;
+        axdl_bbox_t bbox;
         int bHasBoxVertices; // bbox with rotate
-        libaxdl_point_t bbox_vertices[4];
+        axdl_point_t bbox_vertices[4];
 
         int nLandmark; // num of lmk
 #define SAMPLE_PLATE_LMK_SIZE 4
@@ -85,55 +85,78 @@ extern "C"
 #define SAMPLE_BODY_LMK_SIZE 17
 #define SAMPLE_ANIMAL_LMK_SIZE 20
 #define SAMPLE_HAND_LMK_SIZE 21
-        libaxdl_point_t *landmark;
+        axdl_point_t *landmark;
 
         int bHasMask;
-        libaxdl_mat_t mYolov5Mask; // cv::Mat
+        axdl_mat_t mYolov5Mask; // cv::Mat
 
         int bHasFaceFeat;
-        libaxdl_mat_t mFaceFeat;
+        axdl_mat_t mFaceFeat;
 
         int label;
         float prob;
         char objname[SAMPLE_OBJ_NAME_MAX_LEN];
-    } libaxdl_object_t;
+    } axdl_object_t;
 
     typedef struct _results_t
     {
         int mModelType; // MODEL_TYPE_E
         int nObjSize;
-        libaxdl_object_t mObjects[SAMPLE_MAX_BBOX_COUNT];
+        axdl_object_t mObjects[SAMPLE_MAX_BBOX_COUNT];
 
         int bPPHumSeg;
-        libaxdl_mat_t mPPHumSeg;
+        axdl_mat_t mPPHumSeg;
 
         int bYolopv2Mask;
-        libaxdl_mat_t mYolopv2seg;
-        libaxdl_mat_t mYolopv2ll;
+        axdl_mat_t mYolopv2seg;
+        axdl_mat_t mYolopv2ll;
 
         int nCrowdCount;
-        libaxdl_point_t *mCrowdCountPts;
+        axdl_point_t *mCrowdCountPts;
 
         int niFps /*inference*/, noFps /*osd*/;
 
-    } libaxdl_results_t;
+    } axdl_results_t;
 
     typedef struct _canvas_t
     {
         unsigned char *data;
         int width, height, channel;
-    } libaxdl_canvas_t;
+    } axdl_canvas_t;
 
-    int libaxdl_parse_param_init(char *json_file_path, void **pModels);
-    void libaxdl_deinit(void **pModels);
+    typedef enum _color_space_e
+    {
+        libaxdl_color_space_unknown,
+        libaxdl_color_space_nv12,
+        libaxdl_color_space_nv21,
+        libaxdl_color_space_bgr,
+        libaxdl_color_space_rgb,
+    } axdl_color_space_e;
 
-    int libaxdl_get_ivps_width_height(void *pModels, char *json_file_path, int *width_ivps, int *height_ivps);
-    int libaxdl_get_color_space(void *pModels);
-    int libaxdl_get_model_type(void *pModels);
+    typedef struct _image_t
+    {
+        unsigned long long int pPhy;
+        void *pVir;
+        unsigned int nSize;
+        unsigned int nWidth;
+        unsigned int nHeight;
+        axdl_color_space_e eDtype;
+        union
+        {
+            int tStride_H, tStride_W, tStride_C;
+        };
+    } axdl_image_t;
 
-    int libaxdl_inference(void *pModels, const void *pstFrame, libaxdl_results_t *pResults);
+    int axdl_parse_param_init(char *json_file_path, void **pModels);
+    void axdl_deinit(void **pModels);
 
-    int libaxdl_draw_results(void *pModels, libaxdl_canvas_t *canvas, libaxdl_results_t *pResults, float fontscale, int thickness, int offset_x, int offset_y);
+    int axdl_get_ivps_width_height(void *pModels, char *json_file_path, int *width_ivps, int *height_ivps);
+    int axdl_get_color_space(void *pModels);
+    int axdl_get_model_type(void *pModels);
+
+    int axdl_inference(void *pModels, axdl_image_t *pstFrame, axdl_results_t *pResults);
+
+    int axdl_draw_results(void *pModels, axdl_canvas_t *canvas, axdl_results_t *pResults, float fontscale, int thickness, int offset_x, int offset_y);
 #ifdef __cplusplus
 }
 #endif

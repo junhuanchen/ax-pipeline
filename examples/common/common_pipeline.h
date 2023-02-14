@@ -104,13 +104,22 @@ extern "C"
         int poolid;     // internal variable,dont touch，内部使用，不要有任何操作
     } pipeline_vdec_config_t;
 
+    typedef enum
+    {
+        pipeline_buffer_color_space_unknown,
+        pipeline_buffer_color_space_nv12,
+        pipeline_buffer_color_space_nv21,
+        pipeline_buffer_color_space_bgr,
+        pipeline_buffer_color_space_rgb,
+    } pipeline_buffer_color_space_t;
+
     typedef struct
     {
         int pipeid;                      // pipeline 的 id
         pipeline_output_e m_output_type; // 输出的类型
         // 图像或者buffer的一些参数
         int n_width, n_height, n_size, n_stride;
-        int d_type; // AX_NPU_CV_FrameDataType
+        pipeline_buffer_color_space_t d_type;
         void *p_vir;
         unsigned long long int p_phy;
 
@@ -145,7 +154,7 @@ extern "C"
         pipeline_frame_callback_func output_func;
 
     } pipeline_t;
-    
+
     int create_pipeline(pipeline_t *pipe);
     int destory_pipeline(pipeline_t *pipe);
     // 这里认为 pipe 指针含有 pipe_cnt 个 pipeline_t 结构体，并且每一个 pipeline_t 的输入类型 pipeline_input_e 是一样的，此函数会将同一张图片发送到所有 pipe_cnt 条链路中

@@ -5,12 +5,12 @@
 
 #define ANCHOR_SIZE_PER_STRIDE 6
 
-int ax_model_yolov5::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov5::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != nOutputSize * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -55,12 +55,12 @@ int ax_model_yolov5::post_process(const void *pstFrame, ax_joint_runner_box_t *c
     return 0;
 }
 
-int ax_model_yolov5_seg::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov5_seg::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != (nOutputSize - 1) * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -123,7 +123,7 @@ int ax_model_yolov5_seg::post_process(const void *pstFrame, ax_joint_runner_box_
     return 0;
 }
 
-void ax_model_yolov5_seg::draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
+void ax_model_yolov5_seg::draw_custom(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
 {
     draw_bbox(image, results, fontscale, thickness, offset_x, offset_y);
     for (int i = 0; i < results->nObjSize; i++)
@@ -155,7 +155,7 @@ void ax_model_yolov5_seg::draw_custom(cv::Mat &image, libaxdl_results_t *results
     }
 }
 
-int ax_model_yolov5_face::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov5_face::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -163,8 +163,8 @@ int ax_model_yolov5_face::post_process(const void *pstFrame, ax_joint_runner_box
     }
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != nOutputSize * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -198,7 +198,7 @@ int ax_model_yolov5_face::post_process(const void *pstFrame, ax_joint_runner_box
         results->mObjects[i].label = obj.label;
         results->mObjects[i].prob = obj.prob;
         results->mObjects[i].nLandmark = SAMPLE_FACE_LMK_SIZE;
-        std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+        std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
         points.resize(results->mObjects[i].nLandmark);
         results->mObjects[i].landmark = points.data();
         for (size_t j = 0; j < SAMPLE_FACE_LMK_SIZE; j++)
@@ -219,7 +219,7 @@ int ax_model_yolov5_face::post_process(const void *pstFrame, ax_joint_runner_box
     return 0;
 }
 
-void ax_model_yolov5_face::draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
+void ax_model_yolov5_face::draw_custom(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
 {
     draw_bbox(image, results, fontscale, thickness, offset_x, offset_y);
     for (int i = 0; i < results->nObjSize; i++)
@@ -233,7 +233,7 @@ void ax_model_yolov5_face::draw_custom(cv::Mat &image, libaxdl_results_t *result
     }
 }
 
-int ax_model_yolov5_lisence_plate::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov5_lisence_plate::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -241,8 +241,8 @@ int ax_model_yolov5_lisence_plate::post_process(const void *pstFrame, ax_joint_r
     }
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != nOutputSize * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -276,7 +276,7 @@ int ax_model_yolov5_lisence_plate::post_process(const void *pstFrame, ax_joint_r
         results->mObjects[i].label = obj.label;
         results->mObjects[i].prob = obj.prob;
         results->mObjects[i].nLandmark = SAMPLE_PLATE_LMK_SIZE;
-        std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+        std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
         points.resize(results->mObjects[i].nLandmark);
         results->mObjects[i].landmark = points.data();
         for (size_t j = 0; j < SAMPLE_PLATE_LMK_SIZE; j++)
@@ -288,9 +288,9 @@ int ax_model_yolov5_lisence_plate::post_process(const void *pstFrame, ax_joint_r
         }
         results->mObjects[i].bHasBoxVertices = 1;
 
-        std::vector<libaxdl_point_t> pppp(4);
-        memcpy(pppp.data(), &results->mObjects[i].bbox_vertices[0], 4 * sizeof(libaxdl_point_t));
-        std::sort(pppp.begin(), pppp.end(), [](libaxdl_point_t &a, libaxdl_point_t &b)
+        std::vector<axdl_point_t> pppp(4);
+        memcpy(pppp.data(), &results->mObjects[i].bbox_vertices[0], 4 * sizeof(axdl_point_t));
+        std::sort(pppp.begin(), pppp.end(), [](axdl_point_t &a, axdl_point_t &b)
                   { return a.x < b.x; });
         if (pppp[0].y < pppp[1].y)
         {
@@ -325,12 +325,12 @@ int ax_model_yolov5_lisence_plate::post_process(const void *pstFrame, ax_joint_r
     return 0;
 }
 
-int ax_model_yolov6::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov6::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    // AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    // int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     // float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
     for (uint32_t i = 0; i < STRIDES.size(); ++i)
@@ -369,12 +369,12 @@ int ax_model_yolov6::post_process(const void *pstFrame, ax_joint_runner_box_t *c
     return 0;
 }
 
-int ax_model_yolov7::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov7::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != nOutputSize * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -419,7 +419,7 @@ int ax_model_yolov7::post_process(const void *pstFrame, ax_joint_runner_box_t *c
     return 0;
 }
 
-int ax_model_yolov7_face::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov7_face::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -427,8 +427,8 @@ int ax_model_yolov7_face::post_process(const void *pstFrame, ax_joint_runner_box
     }
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != nOutputSize * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -462,7 +462,7 @@ int ax_model_yolov7_face::post_process(const void *pstFrame, ax_joint_runner_box
         results->mObjects[i].label = obj.label;
         results->mObjects[i].prob = obj.prob;
         results->mObjects[i].nLandmark = SAMPLE_FACE_LMK_SIZE;
-        std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+        std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
         points.resize(results->mObjects[i].nLandmark);
         results->mObjects[i].landmark = points.data();
         for (size_t j = 0; j < SAMPLE_FACE_LMK_SIZE; j++)
@@ -482,12 +482,12 @@ int ax_model_yolov7_face::post_process(const void *pstFrame, ax_joint_runner_box
     return 0;
 }
 
-int ax_model_yolov7_plam_hand::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov7_plam_hand::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::PalmObject> proposals;
     std::vector<detection::PalmObject> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != nOutputSize * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -532,7 +532,7 @@ int ax_model_yolov7_plam_hand::post_process(const void *pstFrame, ax_joint_runne
     return 0;
 }
 
-int ax_model_plam_hand::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_plam_hand::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     static const int map_size[2] = {24, 12};
     static const int strides[2] = {8, 16};
@@ -578,12 +578,12 @@ int ax_model_plam_hand::post_process(const void *pstFrame, ax_joint_runner_box_t
     return 0;
 }
 
-int ax_model_yolox::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolox::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    // AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    // int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     // float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
     for (uint32_t i = 0; i < STRIDES.size(); ++i)
@@ -622,12 +622,12 @@ int ax_model_yolox::post_process(const void *pstFrame, ax_joint_runner_box_t *cr
     return 0;
 }
 
-int ax_model_yoloxppl::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yoloxppl::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     // float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
     for (uint32_t i = 0; i < nOutputSize; ++i)
@@ -670,10 +670,10 @@ int ax_model_yoloxppl::post_process(const void *pstFrame, ax_joint_runner_box_t 
     return 0;
 }
 
-int ax_model_yolopv2::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolopv2::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if ((int)ANCHORS.size() != (nOutputSize - 2) * ANCHOR_SIZE_PER_STRIDE)
     {
@@ -738,7 +738,7 @@ int ax_model_yolopv2::post_process(const void *pstFrame, ax_joint_runner_box_t *
     return 0;
 }
 
-void ax_model_yolopv2::draw_custom(cv::Mat &image, libaxdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
+void ax_model_yolopv2::draw_custom(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y)
 {
     if (results->bYolopv2Mask && results->mYolopv2ll.data && results->mYolopv2seg.data)
     {
@@ -759,10 +759,10 @@ void ax_model_yolopv2::draw_custom(cv::Mat &image, libaxdl_results_t *results, f
     draw_bbox(image, results, fontscale, thickness, offset_x, offset_y);
 }
 
-int ax_model_yolo_fast_body::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolo_fast_body::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     if (!bInit)
     {
@@ -868,12 +868,12 @@ int ax_model_yolo_fast_body::post_process(const void *pstFrame, ax_joint_runner_
     return 0;
 }
 
-int ax_model_nanodet::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_nanodet::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    // AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    // int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     // float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
     for (uint32_t i = 0; i < STRIDES.size(); ++i)
@@ -915,7 +915,7 @@ int ax_model_nanodet::post_process(const void *pstFrame, ax_joint_runner_box_t *
     return 0;
 }
 
-int ax_model_scrfd::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_scrfd::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -923,8 +923,8 @@ int ax_model_scrfd::post_process(const void *pstFrame, ax_joint_runner_box_t *cr
     }
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     std::map<std::string, float *> output_map;
     for (uint32_t i = 0; i < nOutputSize; i++)
@@ -965,7 +965,7 @@ int ax_model_scrfd::post_process(const void *pstFrame, ax_joint_runner_box_t *cr
         results->mObjects[i].label = obj.label;
         results->mObjects[i].prob = obj.prob;
         results->mObjects[i].nLandmark = SAMPLE_FACE_LMK_SIZE;
-        std::vector<libaxdl_point_t> &points = mSimpleRingBuffer.next();
+        std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
         points.resize(results->mObjects[i].nLandmark);
         results->mObjects[i].landmark = points.data();
         for (size_t j = 0; j < SAMPLE_FACE_LMK_SIZE; j++)
@@ -986,12 +986,12 @@ int ax_model_scrfd::post_process(const void *pstFrame, ax_joint_runner_box_t *cr
     return 0;
 }
 
-int ax_model_yolov8::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov8::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    // AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    // int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
     for (uint32_t i = 0; i < STRIDES.size(); ++i)
@@ -1034,12 +1034,12 @@ int ax_model_yolov8::post_process(const void *pstFrame, ax_joint_runner_box_t *c
     return 0;
 }
 
-int ax_model_yolov8_seg::post_process(const void *pstFrame, ax_joint_runner_box_t *crop_resize_box, libaxdl_results_t *results)
+int ax_model_yolov8_seg::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
-    // AX_U32 nOutputSize = m_runner->get_num_outputs();
-    const ax_joint_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
+    // int nOutputSize = m_runner->get_num_outputs();
+    const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
 
     float prob_threshold_unsigmoid = -1.0f * (float)std::log((1.0f / PROB_THRESHOLD) - 1.0f);
     for (uint32_t i = 0; i < STRIDES.size(); ++i)

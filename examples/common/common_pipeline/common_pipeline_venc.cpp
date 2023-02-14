@@ -77,7 +77,7 @@ void *_venc_get_frame_thread(void *arg)
                 buf.n_height = 0;
                 buf.n_size = stStream.stPack.u32Len;
                 buf.n_stride = 0;
-                buf.d_type = 0;
+                buf.d_type = pipeline_buffer_color_space_unknown;
                 buf.p_vir = stStream.stPack.pu8Addr;
                 buf.p_phy = stStream.stPack.ulPhyAddr;
                 buf.p_pipe = pipe;

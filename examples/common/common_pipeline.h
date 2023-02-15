@@ -88,6 +88,7 @@ extern "C"
         int b_letterbox; // 填充，一般用于ai检测
 
         int n_fifo_count; // [0]表示不输出，[1-4]表示队列的个数，大于[0]则可以在调用回调输出图像
+        unsigned long int tid; // internal variable
     } pipeline_ivps_config_t;
 
     typedef struct
@@ -95,6 +96,7 @@ extern "C"
 #define MAX_VENC_CHN_COUNT 64
         int n_venc_chn;     // 少于64 并且不能重复
         char end_point[32]; // rtsp的节点名称 例如 rtsp://x.x.x.x:554/end_point
+        unsigned long int tid; // internal variable
     } pipeline_venc_config_t;
 
     typedef struct
@@ -102,6 +104,7 @@ extern "C"
 #define MAX_VDEC_GRP_COUNT 16
         int n_vdec_grp; // 少于 16，允许重复
         int poolid;     // internal variable,dont touch，内部使用，不要有任何操作
+        unsigned long int tid; // internal variable
     } pipeline_vdec_config_t;
 
     typedef enum

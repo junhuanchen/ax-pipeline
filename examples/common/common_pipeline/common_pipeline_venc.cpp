@@ -450,12 +450,10 @@ int _create_venc_chn(pipeline_t *pipe)
         set_jpeg_param(pipe);
     }
 
-    pthread_t tid = 0;
-    if (0 != pthread_create(&tid, NULL, _venc_get_frame_thread, pipe))
+    if (0 != pthread_create(&pipe->m_venc_attr.tid, NULL, _venc_get_frame_thread, pipe))
     {
         return -1;
     }
-    pthread_detach(tid);
 
     return 0;
 }
@@ -463,7 +461,7 @@ int _create_venc_chn(pipeline_t *pipe)
 int _destore_venc_grp(pipeline_t *pipe)
 {
     AX_S32 s32Ret = 0;
-
+    pthread_join(pipe->m_venc_attr.tid, NULL);
     s32Ret = AX_VENC_StopRecvFrame(pipe->m_venc_attr.n_venc_chn);
     if (0 != s32Ret)
     {

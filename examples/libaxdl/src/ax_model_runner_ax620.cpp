@@ -1,4 +1,4 @@
-#include "../include/ax_joint_runner.hpp"
+#include "../include/ax_model_runner.hpp"
 #include "../../utilities/sample_log.h"
 
 #include "sample_run_joint.h"

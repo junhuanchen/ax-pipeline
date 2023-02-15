@@ -435,7 +435,7 @@ int destory_pipeline(pipeline_t *pipe)
         return -1;
     }
     pipe->n_loog_exit = 1;
-    usleep(200 * 1000);
+    // usleep(200 * 1000);
     erase(pipeline_handle.pipeid_pipe, pipe->pipeid);
 
     switch (pipe->m_input_type)

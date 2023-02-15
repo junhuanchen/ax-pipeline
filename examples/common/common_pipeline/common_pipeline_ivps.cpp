@@ -277,12 +277,10 @@ int _create_ivps_grp(pipeline_t *pipe)
     case po_buff_nv21:
         if (stPipelineAttr.nOutFifoDepth[nChn] > 0)
         {
-            pthread_t tid = 0;
-            if (0 != pthread_create(&tid, NULL, _ivps_get_frame_thread, pipe))
+            if (0 != pthread_create(&pipe->m_ivps_attr.tid, NULL, _ivps_get_frame_thread, pipe))
             {
                 return -1;
             }
-            pthread_detach(tid);
         }
         else
         {
@@ -300,6 +298,7 @@ int _create_ivps_grp(pipeline_t *pipe)
 int _destore_ivps_grp(pipeline_t *pipe)
 {
     AX_S32 s32Ret = 0;
+    pthread_join(pipe->m_ivps_attr.tid, NULL);
 
     s32Ret = AX_IVPS_StopGrp(pipe->m_ivps_attr.n_ivps_grp);
     if (0 != s32Ret)

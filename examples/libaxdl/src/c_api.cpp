@@ -114,11 +114,11 @@ int axdl_get_ivps_width_height(void *pModels, char *json_file_path, int *width_i
     }
     return 0;
 }
-int axdl_get_color_space(void *pModels)
+axdl_color_space_e axdl_get_color_space(void *pModels)
 {
     if (!(ax_model_handle_t *)(pModels) || !((ax_model_handle_t *)(pModels))->model.get())
     {
-        return -1;
+        return axdl_color_space_e::axdl_color_space_unknown;
     }
     return ((ax_model_handle_t *)pModels)->model->get_color_space();
 }

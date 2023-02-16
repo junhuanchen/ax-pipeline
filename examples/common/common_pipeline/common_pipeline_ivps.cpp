@@ -103,18 +103,18 @@ void *_ivps_get_frame_thread(void *arg)
             {
             case AX_YUV420_SEMIPLANAR:
                 buf.n_size = tVideoFrame.u32PicStride[0] * tVideoFrame.u32Height * 3 / 2;
-                buf.d_type = pipeline_buffer_color_space_nv12;
+                buf.d_type = po_buff_nv12;
                 break;
             case AX_FORMAT_RGB888:
                 buf.n_size = tVideoFrame.u32PicStride[0] * tVideoFrame.u32Height * 3;
-                buf.d_type = pipeline_buffer_color_space_rgb;
+                buf.d_type = po_buff_rgb;
                 break;
             case AX_FORMAT_BGR888:
                 buf.n_size = tVideoFrame.u32PicStride[0] * tVideoFrame.u32Height * 3;
-                buf.d_type = pipeline_buffer_color_space_bgr;
+                buf.d_type = po_buff_bgr;
                 break;
             default:
-                buf.d_type = pipeline_buffer_color_space_unknown;
+                buf.d_type = po_none;
                 break;
             }
             buf.p_vir = (AX_U8 *)tVideoFrame.u64VirAddr[0];

@@ -30,16 +30,16 @@ void cvt(axdl_image_t *src, AX_NPU_CV_Image *dst)
     dst->tStride.nW = src->tStride_C;
     switch (src->eDtype)
     {
-    case libaxdl_color_space_nv12:
+    case axdl_color_space_nv12:
         dst->eDtype = AX_NPU_CV_FDT_NV12;
         break;
-    case libaxdl_color_space_nv21:
+    case axdl_color_space_nv21:
         dst->eDtype = AX_NPU_CV_FDT_NV21;
         break;
-    case libaxdl_color_space_bgr:
+    case axdl_color_space_bgr:
         dst->eDtype = AX_NPU_CV_FDT_BGR;
         break;
-    case libaxdl_color_space_rgb:
+    case axdl_color_space_rgb:
         dst->eDtype = AX_NPU_CV_FDT_RGB;
         break;
     default:
@@ -85,11 +85,11 @@ int ax_align_face(axdl_object_t *obj, axdl_image_t *src, axdl_image_t *dst)
         {0, 0, 1}};
 
     dst->eDtype = src->eDtype;
-    if (dst->eDtype == libaxdl_color_space_rgb || dst->eDtype == libaxdl_color_space_bgr)
+    if (dst->eDtype == axdl_color_space_rgb || dst->eDtype == axdl_color_space_bgr)
     {
         dst->nSize = 112 * 112 * 3;
     }
-    else if (dst->eDtype == libaxdl_color_space_nv12 || dst->eDtype == libaxdl_color_space_nv21)
+    else if (dst->eDtype == axdl_color_space_nv12 || dst->eDtype == axdl_color_space_nv21)
     {
         dst->nSize = 112 * 112 * 1.5;
     }

@@ -126,11 +126,11 @@ extern "C"
 
     typedef enum _color_space_e
     {
-        libaxdl_color_space_unknown,
-        libaxdl_color_space_nv12,
-        libaxdl_color_space_nv21,
-        libaxdl_color_space_bgr,
-        libaxdl_color_space_rgb,
+        axdl_color_space_unknown,
+        axdl_color_space_nv12,
+        axdl_color_space_nv21,
+        axdl_color_space_bgr,
+        axdl_color_space_rgb,
     } axdl_color_space_e;
 
     typedef struct _image_t
@@ -151,7 +151,7 @@ extern "C"
     void axdl_deinit(void **pModels);
 
     int axdl_get_ivps_width_height(void *pModels, char *json_file_path, int *width_ivps, int *height_ivps);
-    int axdl_get_color_space(void *pModels);
+    axdl_color_space_e axdl_get_color_space(void *pModels);
     int axdl_get_model_type(void *pModels);
 
     int axdl_inference(void *pModels, axdl_image_t *pstFrame, axdl_results_t *pResults);

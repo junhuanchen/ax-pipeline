@@ -165,17 +165,14 @@ void ai_inference_func(pipeline_buffer_t *buff)
         axdl_image_t tSrcFrame = {0};
         switch (buff->d_type)
         {
-        case pipeline_buffer_color_space_nv12:
-            tSrcFrame.eDtype = libaxdl_color_space_nv12;
+        case po_buff_nv12:
+            tSrcFrame.eDtype = axdl_color_space_nv12;
             break;
-        case pipeline_buffer_color_space_nv21:
-            tSrcFrame.eDtype = libaxdl_color_space_nv21;
+        case po_buff_bgr:
+            tSrcFrame.eDtype = axdl_color_space_bgr;
             break;
-        case pipeline_buffer_color_space_bgr:
-            tSrcFrame.eDtype = libaxdl_color_space_bgr;
-            break;
-        case pipeline_buffer_color_space_rgb:
-            tSrcFrame.eDtype = libaxdl_color_space_rgb;
+        case po_buff_rgb:
+            tSrcFrame.eDtype = axdl_color_space_rgb;
             break;
         default:
             break;
@@ -437,13 +434,13 @@ int main(int argc, char *argv[])
         {
             switch (axdl_get_color_space(g_sample.gModels))
             {
-            case AX_FORMAT_RGB888:
+            case axdl_color_space_rgb:
                 pipe1.m_output_type = po_buff_rgb;
                 break;
-            case AX_FORMAT_BGR888:
+            case axdl_color_space_bgr:
                 pipe1.m_output_type = po_buff_bgr;
                 break;
-            case AX_YUV420_SEMIPLANAR:
+            case axdl_color_space_nv12:
             default:
                 pipe1.m_output_type = po_buff_nv12;
                 break;

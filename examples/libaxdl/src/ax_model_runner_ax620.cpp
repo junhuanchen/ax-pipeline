@@ -53,7 +53,20 @@ void ax_runner_ax620::deinit()
 
 int ax_runner_ax620::get_algo_width() { return m_handle->m_attr.algo_width; }
 int ax_runner_ax620::get_algo_height() { return m_handle->m_attr.algo_height; }
-int ax_runner_ax620::get_color_space() { return m_handle->m_attr.algo_colorformat; }
+axdl_color_space_e ax_runner_ax620::get_color_space()
+{
+    switch (m_handle->m_attr.algo_colorformat)
+    {
+    case AX_FORMAT_RGB888:
+        return axdl_color_space_e::axdl_color_space_rgb;
+    case AX_FORMAT_BGR888:
+        return axdl_color_space_e::axdl_color_space_bgr;
+    case AX_YUV420_SEMIPLANAR:
+        return axdl_color_space_e::axdl_color_space_nv12;
+    default:
+        return axdl_color_space_unknown;
+    }
+}
 
 void cvt(axdl_image_t *src, AX_NPU_CV_Image *dst);
 

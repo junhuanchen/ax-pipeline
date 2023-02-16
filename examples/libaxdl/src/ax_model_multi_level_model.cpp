@@ -196,12 +196,12 @@ int ax_model_hand_pose::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_
     if (!pstFrame_RGB.pVir)
     {
         memcpy(&pstFrame_RGB, pstFrame, sizeof(axdl_image_t));
-        pstFrame_RGB.eDtype = libaxdl_color_space_rgb;
+        pstFrame_RGB.eDtype = axdl_color_space_rgb;
         ax_sys_memalloc(&pstFrame_RGB.pPhy, (void **)&pstFrame_RGB.pVir, pstFrame_RGB.nSize, 0x100, NULL);
     }
-    pstFrame_RGB.eDtype = libaxdl_color_space_bgr;
+    pstFrame_RGB.eDtype = axdl_color_space_bgr;
     ax_npu_csc(pstFrame, &pstFrame_RGB);
-    pstFrame_RGB.eDtype = libaxdl_color_space_rgb;
+    pstFrame_RGB.eDtype = axdl_color_space_rgb;
 
     int ret = model_0->inference(&pstFrame_RGB, crop_resize_box, results);
     if (ret)
@@ -231,7 +231,7 @@ int ax_model_face_recognition::inference(axdl_image_t *pstFrame, ax_runner_box_t
                 continue;
             }
             axdl_image_t npu_image = {0};
-            npu_image.eDtype = libaxdl_color_space_rgb;
+            npu_image.eDtype = axdl_color_space_rgb;
             npu_image.nHeight = image.rows;
             npu_image.nWidth = image.cols;
             npu_image.tStride_W = npu_image.nWidth;

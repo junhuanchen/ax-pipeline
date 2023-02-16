@@ -36,7 +36,7 @@ public:
 
     virtual int get_algo_width() = 0;
     virtual int get_algo_height() = 0;
-    virtual int get_color_space() = 0;
+    virtual axdl_color_space_e get_color_space() = 0;
 
     virtual int inference(axdl_image_t *pstFrame, const ax_runner_box_t *crop_resize_box) = 0;
 };
@@ -53,7 +53,7 @@ public:
 
     int get_algo_width() override;
     int get_algo_height() override;
-    int get_color_space() override;
+    axdl_color_space_e get_color_space() override;
 
     int inference(axdl_image_t *pstFrame, const ax_runner_box_t *crop_resize_box) override;
 };

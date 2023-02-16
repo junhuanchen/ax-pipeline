@@ -125,7 +125,7 @@ public:
 
     virtual int init(void *json_obj) = 0;
     virtual void deinit() = 0;
-    virtual int get_color_space() = 0;
+    virtual axdl_color_space_e get_color_space() = 0;
     virtual int get_algo_width() = 0;
     virtual int get_algo_height() = 0;
     virtual int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) = 0;
@@ -152,7 +152,7 @@ public:
     virtual int init(void *json_obj) override;
     virtual void deinit() override;
 
-    int get_color_space() override { return m_runner->get_color_space(); }
+    axdl_color_space_e get_color_space() override { return m_runner->get_color_space(); }
     int get_algo_width() override { return m_runner->get_algo_width(); }
     int get_algo_height() override { return m_runner->get_algo_height(); }
 
@@ -178,7 +178,7 @@ public:
     // virtual int init(char *json_file_path);
     virtual int init(void *json_obj) override;
     virtual void deinit() override;
-    int get_color_space() override { return model_0->get_color_space(); }
+    axdl_color_space_e get_color_space() override { return model_0->get_color_space(); }
     int get_algo_width() override { return model_0->get_algo_width(); }
     int get_algo_height() override { return model_0->get_algo_height(); }
 };

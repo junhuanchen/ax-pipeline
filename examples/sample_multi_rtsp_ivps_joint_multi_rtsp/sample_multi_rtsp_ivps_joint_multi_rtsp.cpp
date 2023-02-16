@@ -428,17 +428,14 @@ void ai_inference_func0(pipeline_buffer_t *buff)
         axdl_image_t tSrcFrame = {0};
         switch (buff->d_type)
         {
-        case pipeline_buffer_color_space_nv12:
-            tSrcFrame.eDtype = libaxdl_color_space_nv12;
+        case po_buff_nv12:
+            tSrcFrame.eDtype = axdl_color_space_nv12;
             break;
-        case pipeline_buffer_color_space_nv21:
-            tSrcFrame.eDtype = libaxdl_color_space_nv21;
+        case po_buff_bgr:
+            tSrcFrame.eDtype = axdl_color_space_bgr;
             break;
-        case pipeline_buffer_color_space_bgr:
-            tSrcFrame.eDtype = libaxdl_color_space_bgr;
-            break;
-        case pipeline_buffer_color_space_rgb:
-            tSrcFrame.eDtype = libaxdl_color_space_rgb;
+        case po_buff_rgb:
+            tSrcFrame.eDtype = axdl_color_space_rgb;
             break;
         default:
             break;
@@ -466,17 +463,14 @@ void ai_inference_func1(pipeline_buffer_t *buff)
         axdl_image_t tSrcFrame = {0};
         switch (buff->d_type)
         {
-        case pipeline_buffer_color_space_nv12:
-            tSrcFrame.eDtype = libaxdl_color_space_nv12;
+        case po_buff_nv12:
+            tSrcFrame.eDtype = axdl_color_space_nv12;
             break;
-        case pipeline_buffer_color_space_nv21:
-            tSrcFrame.eDtype = libaxdl_color_space_nv21;
+        case po_buff_bgr:
+            tSrcFrame.eDtype = axdl_color_space_bgr;
             break;
-        case pipeline_buffer_color_space_bgr:
-            tSrcFrame.eDtype = libaxdl_color_space_bgr;
-            break;
-        case pipeline_buffer_color_space_rgb:
-            tSrcFrame.eDtype = libaxdl_color_space_rgb;
+        case po_buff_rgb:
+            tSrcFrame.eDtype = axdl_color_space_rgb;
             break;
         default:
             break;
@@ -504,17 +498,14 @@ void ai_inference_func2(pipeline_buffer_t *buff)
         axdl_image_t tSrcFrame = {0};
         switch (buff->d_type)
         {
-        case pipeline_buffer_color_space_nv12:
-            tSrcFrame.eDtype = libaxdl_color_space_nv12;
+        case po_buff_nv12:
+            tSrcFrame.eDtype = axdl_color_space_nv12;
             break;
-        case pipeline_buffer_color_space_nv21:
-            tSrcFrame.eDtype = libaxdl_color_space_nv21;
+        case po_buff_bgr:
+            tSrcFrame.eDtype = axdl_color_space_bgr;
             break;
-        case pipeline_buffer_color_space_bgr:
-            tSrcFrame.eDtype = libaxdl_color_space_bgr;
-            break;
-        case pipeline_buffer_color_space_rgb:
-            tSrcFrame.eDtype = libaxdl_color_space_rgb;
+        case po_buff_rgb:
+            tSrcFrame.eDtype = axdl_color_space_rgb;
             break;
         default:
             break;
@@ -542,17 +533,14 @@ void ai_inference_func3(pipeline_buffer_t *buff)
         axdl_image_t tSrcFrame = {0};
         switch (buff->d_type)
         {
-        case pipeline_buffer_color_space_nv12:
-            tSrcFrame.eDtype = libaxdl_color_space_nv12;
+        case po_buff_nv12:
+            tSrcFrame.eDtype = axdl_color_space_nv12;
             break;
-        case pipeline_buffer_color_space_nv21:
-            tSrcFrame.eDtype = libaxdl_color_space_nv21;
+        case po_buff_bgr:
+            tSrcFrame.eDtype = axdl_color_space_bgr;
             break;
-        case pipeline_buffer_color_space_bgr:
-            tSrcFrame.eDtype = libaxdl_color_space_bgr;
-            break;
-        case pipeline_buffer_color_space_rgb:
-            tSrcFrame.eDtype = libaxdl_color_space_rgb;
+        case po_buff_rgb:
+            tSrcFrame.eDtype = axdl_color_space_rgb;
             break;
         default:
             break;

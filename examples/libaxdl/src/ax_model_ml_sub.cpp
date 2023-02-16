@@ -20,13 +20,13 @@ int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t 
             dstFrame.nHeight = get_algo_height();
             dstFrame.nWidth = get_algo_width();
             dstFrame.tStride_W = dstFrame.nWidth;
-            if (dstFrame.eDtype == libaxdl_color_space_nv12)
+            if (dstFrame.eDtype == axdl_color_space_nv12)
             {
                 dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3 / 2;
             }
-            else if (dstFrame.eDtype == libaxdl_color_space_rgb || dstFrame.eDtype == libaxdl_color_space_bgr)
+            else if (dstFrame.eDtype == axdl_color_space_rgb || dstFrame.eDtype == axdl_color_space_bgr)
             {
-                dstFrame.eDtype = libaxdl_color_space_bgr;
+                dstFrame.eDtype = axdl_color_space_bgr;
                 dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3;
             }
             else
@@ -189,13 +189,13 @@ int ax_model_pose_hand_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *
         dstFrame.nHeight = get_algo_height();
         dstFrame.nWidth = get_algo_width();
         dstFrame.tStride_W = dstFrame.nWidth;
-        if (dstFrame.eDtype == libaxdl_color_space_nv12)
+        if (dstFrame.eDtype == axdl_color_space_nv12)
         {
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3 / 2;
         }
-        else if (dstFrame.eDtype == libaxdl_color_space_rgb || dstFrame.eDtype == libaxdl_color_space_bgr)
+        else if (dstFrame.eDtype == axdl_color_space_rgb || dstFrame.eDtype == axdl_color_space_bgr)
         {
-            dstFrame.eDtype = libaxdl_color_space_bgr;
+            dstFrame.eDtype = axdl_color_space_bgr;
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3;
         }
         else
@@ -357,13 +357,13 @@ int ax_model_license_plate_recognition_sub::preprocess(axdl_image_t *pstFrame, a
         dstFrame.nHeight = get_algo_height();
         dstFrame.nWidth = get_algo_width();
         dstFrame.tStride_W = dstFrame.nWidth;
-        if (dstFrame.eDtype == libaxdl_color_space_nv12)
+        if (dstFrame.eDtype == axdl_color_space_nv12)
         {
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3 / 2;
         }
-        else if (dstFrame.eDtype == libaxdl_color_space_rgb || dstFrame.eDtype == libaxdl_color_space_bgr)
+        else if (dstFrame.eDtype == axdl_color_space_rgb || dstFrame.eDtype == axdl_color_space_bgr)
         {
-            dstFrame.eDtype = libaxdl_color_space_bgr;
+            dstFrame.eDtype = axdl_color_space_bgr;
             dstFrame.nSize = dstFrame.nHeight * dstFrame.nWidth * 3;
         }
         else

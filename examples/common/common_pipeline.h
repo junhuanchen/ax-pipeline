@@ -107,22 +107,13 @@ extern "C"
         unsigned long int tid; // internal variable
     } pipeline_vdec_config_t;
 
-    typedef enum
-    {
-        pipeline_buffer_color_space_unknown,
-        pipeline_buffer_color_space_nv12,
-        pipeline_buffer_color_space_nv21,
-        pipeline_buffer_color_space_bgr,
-        pipeline_buffer_color_space_rgb,
-    } pipeline_buffer_color_space_t;
-
     typedef struct
     {
         int pipeid;                      // pipeline 的 id
         pipeline_output_e m_output_type; // 输出的类型
         // 图像或者buffer的一些参数
         int n_width, n_height, n_size, n_stride;
-        pipeline_buffer_color_space_t d_type;
+        pipeline_output_e d_type;
         void *p_vir;
         unsigned long long int p_phy;
 

@@ -116,7 +116,7 @@ static void generate_anchor_points(int img_w, int img_h, std::vector<int> pyrami
     }
 }
 
-int ax_model_crowdcount::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_crowdcount::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (width_anchor != get_algo_width() || height_anchor != get_algo_height())
     {

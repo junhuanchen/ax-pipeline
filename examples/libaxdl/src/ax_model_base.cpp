@@ -171,14 +171,14 @@ void ax_model_single_base_t::deinit()
     }
 }
 
-int ax_model_single_base_t::preprocess(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_single_base_t::preprocess(axdl_image_t *srcFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     memcpy(&dstFrame, srcFrame, sizeof(axdl_image_t));
     bMalloc = false;
     return 0;
 }
 
-int ax_model_single_base_t::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_single_base_t::inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     int ret = preprocess(pstFrame, crop_resize_box, results);
     if (ret != 0)

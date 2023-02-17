@@ -85,11 +85,11 @@ int _ax_imgproc_crop_resize(axdl_image_t *src, axdl_image_t *dst, axdl_bbox_t *b
 
     if (box)
     {
-        box->x = MAX(box->x, 0);
-        box->x = MAX(box->x, 0);
+        box->x = MAX((int)box->x, 0);
+        box->y = MAX((int)box->y, 0);
 
-        box->w = MIN(box->w, src->nWidth - box->x);
-        box->h = MIN(box->h, src->nHeight - box->y);
+        box->w = MIN((int)box->w, (int)src->nWidth - (int)box->x);
+        box->h = MIN((int)box->h, (int)src->nHeight - (int)box->y);
 
         box->w = int(box->w) - int(box->w) % 2;
         box->h = int(box->h) - int(box->h) % 2;

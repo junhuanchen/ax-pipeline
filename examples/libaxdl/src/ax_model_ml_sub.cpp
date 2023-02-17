@@ -7,7 +7,7 @@
 // #include "ax_sys_api.h"
 #include "ax_common_api.h"
 
-int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     int ret;
     axdl_object_t &HumObj = results->mObjects[cur_idx];
@@ -38,44 +38,56 @@ int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t 
             bMalloc = true;
         }
 
-        cv::Point2f src_pts[4];
-
-        if ((HumObj.bbox.w / HumObj.bbox.h) >
-            (float(get_algo_width()) / float(get_algo_height())))
+        if (!use_warp_preprocess)
         {
-            float offset = ((HumObj.bbox.w * (float(get_algo_height()) / float(get_algo_width()))) - HumObj.bbox.h) / 2;
-
-            src_pts[0] = cv::Point2f(HumObj.bbox.x, HumObj.bbox.y - offset);
-            src_pts[1] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w, HumObj.bbox.y - offset);
-            src_pts[2] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w, HumObj.bbox.y + HumObj.bbox.h + offset);
-            src_pts[3] = cv::Point2f(HumObj.bbox.x, HumObj.bbox.y + HumObj.bbox.h + offset);
+            ret = ax_imgproc_crop_resize(pstFrame, &dstFrame, &HumObj.bbox);
+            if (ret != 0)
+            {
+                return ret;
+            }
         }
         else
         {
-            float offset = ((HumObj.bbox.h * (float(get_algo_width()) / float(get_algo_height()))) - HumObj.bbox.w) / 2;
+            cv::Point2f src_pts[4];
 
-            src_pts[0] = cv::Point2f(HumObj.bbox.x - offset, HumObj.bbox.y);
-            src_pts[1] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w + offset, HumObj.bbox.y);
-            src_pts[2] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w + offset, HumObj.bbox.y + HumObj.bbox.h);
-            src_pts[3] = cv::Point2f(HumObj.bbox.x - offset, HumObj.bbox.y + HumObj.bbox.h);
+            if ((HumObj.bbox.w / HumObj.bbox.h) >
+                (float(get_algo_width()) / float(get_algo_height())))
+            {
+                float offset = ((HumObj.bbox.w * (float(get_algo_height()) / float(get_algo_width()))) - HumObj.bbox.h) / 2;
+
+                src_pts[0] = cv::Point2f(HumObj.bbox.x, HumObj.bbox.y - offset);
+                src_pts[1] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w, HumObj.bbox.y - offset);
+                src_pts[2] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w, HumObj.bbox.y + HumObj.bbox.h + offset);
+                src_pts[3] = cv::Point2f(HumObj.bbox.x, HumObj.bbox.y + HumObj.bbox.h + offset);
+            }
+            else
+            {
+                float offset = ((HumObj.bbox.h * (float(get_algo_width()) / float(get_algo_height()))) - HumObj.bbox.w) / 2;
+
+                src_pts[0] = cv::Point2f(HumObj.bbox.x - offset, HumObj.bbox.y);
+                src_pts[1] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w + offset, HumObj.bbox.y);
+                src_pts[2] = cv::Point2f(HumObj.bbox.x + HumObj.bbox.w + offset, HumObj.bbox.y + HumObj.bbox.h);
+                src_pts[3] = cv::Point2f(HumObj.bbox.x - offset, HumObj.bbox.y + HumObj.bbox.h);
+            }
+
+            cv::Point2f dst_pts[4];
+            dst_pts[0] = cv::Point2f(0, 0);
+            dst_pts[1] = cv::Point2f(get_algo_width(), 0);
+            dst_pts[2] = cv::Point2f(get_algo_width(), get_algo_height());
+            dst_pts[3] = cv::Point2f(0, get_algo_height());
+
+            affine_trans_mat = cv::getAffineTransform(src_pts, dst_pts);
+            affine_trans_mat_inv;
+            cv::invertAffineTransform(affine_trans_mat, affine_trans_mat_inv);
+
+            float mat3x3[3][3] = {
+                {(float)affine_trans_mat_inv.at<double>(0, 0), (float)affine_trans_mat_inv.at<double>(0, 1), (float)affine_trans_mat_inv.at<double>(0, 2)},
+                {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
+                {0, 0, 1}};
+            // //这里要用AX_NPU_MODEL_TYPE_1_1_2
+            ret = ax_imgproc_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
         }
 
-        cv::Point2f dst_pts[4];
-        dst_pts[0] = cv::Point2f(0, 0);
-        dst_pts[1] = cv::Point2f(get_algo_width(), 0);
-        dst_pts[2] = cv::Point2f(get_algo_width(), get_algo_height());
-        dst_pts[3] = cv::Point2f(0, get_algo_height());
-
-        affine_trans_mat = cv::getAffineTransform(src_pts, dst_pts);
-        affine_trans_mat_inv;
-        cv::invertAffineTransform(affine_trans_mat, affine_trans_mat_inv);
-
-        float mat3x3[3][3] = {
-            {(float)affine_trans_mat_inv.at<double>(0, 0), (float)affine_trans_mat_inv.at<double>(0, 1), (float)affine_trans_mat_inv.at<double>(0, 2)},
-            {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
-            {0, 0, 1}};
-        // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-        ret = ax_imgproc_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
         if (ret != 0)
         {
             return ret;
@@ -86,12 +98,13 @@ int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t 
     return 0;
 }
 
-int ax_model_pose_hrnet_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pose_hrnet_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
         mSimpleRingBuffer.resize(SAMPLE_RINGBUFFER_CACHE_COUNT);
     }
+    axdl_object_t &HumObj = results->mObjects[cur_idx];
     pose::ai_body_parts_s ai_point_result;
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;
     pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_BODY_LMK_SIZE, get_algo_height(), get_algo_width());
@@ -101,28 +114,29 @@ int ax_model_pose_hrnet_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
     {
-        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
-        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
+        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
         /*
         [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
         [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
         [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
         */
-        int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
-        int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+        // int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+        // int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
 
-        results->mObjects[cur_idx].landmark[i].x = x;
-        results->mObjects[cur_idx].landmark[i].y = y;
+        // results->mObjects[cur_idx].landmark[i].x = x;
+        // results->mObjects[cur_idx].landmark[i].y = y;
     }
     return 0;
 }
 
-int ax_model_pose_axppl_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pose_axppl_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
         mSimpleRingBuffer.resize(SAMPLE_RINGBUFFER_CACHE_COUNT);
     }
+    axdl_object_t &HumObj = results->mObjects[cur_idx];
     pose::ai_body_parts_s ai_point_result;
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;
     auto ptr_index = (float *)m_runner->get_output(1).pVirAddr;
@@ -133,29 +147,29 @@ int ax_model_pose_axppl_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
     {
-        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
-        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
+        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
         /*
         [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
         [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
         [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
         */
-        int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
-        int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+        // int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+        // int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
 
-        results->mObjects[cur_idx].landmark[i].x = x;
-        results->mObjects[cur_idx].landmark[i].y = y;
+        // results->mObjects[cur_idx].landmark[i].x = x;
+        // results->mObjects[cur_idx].landmark[i].y = y;
     }
     return 0;
 }
 
-int ax_model_pose_hrnet_animal_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pose_hrnet_animal_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
         mSimpleRingBuffer.resize(SAMPLE_RINGBUFFER_CACHE_COUNT);
     }
-
+    axdl_object_t &HumObj = results->mObjects[cur_idx];
     pose::ai_body_parts_s ai_point_result;
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;
     pose::hrnet_post_process(ptr, ai_point_result, SAMPLE_ANIMAL_LMK_SIZE, get_algo_height(), get_algo_width());
@@ -165,23 +179,23 @@ int ax_model_pose_hrnet_animal_sub::post_process(axdl_image_t *pstFrame, ax_runn
     results->mObjects[cur_idx].landmark = points.data();
     for (size_t i = 0; i < SAMPLE_ANIMAL_LMK_SIZE; i++)
     {
-        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
-        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
+        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
         /*
         [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
         [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
         [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
         */
-        int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
-        int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+        // int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+        // int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
 
-        results->mObjects[cur_idx].landmark[i].x = x;
-        results->mObjects[cur_idx].landmark[i].y = y;
+        // results->mObjects[cur_idx].landmark[i].x = x;
+        // results->mObjects[cur_idx].landmark[i].y = y;
     }
     return 0;
 }
 
-int ax_model_pose_hand_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pose_hand_sub::preprocess(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (!dstFrame.pVir)
     {
@@ -235,7 +249,7 @@ int ax_model_pose_hand_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *
     return 0;
 }
 
-int ax_model_pose_hand_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pose_hand_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -268,48 +282,6 @@ int ax_model_pose_hand_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t
     return 0;
 }
 
-// void align_face(libaxdl_object_t &obj, AX_NPU_CV_Image *npu_image, AX_NPU_CV_Image &npu_image_face_align)
-// {
-//     // static float target[10] = {30.2946, 51.6963,
-//     //                            65.5318, 51.5014,
-//     //                            48.0252, 71.7366,
-//     //                            33.5493, 92.3655,
-//     //                            62.7299, 92.2041};
-//     static float target[10] = {38.2946, 51.6963,
-//                                73.5318, 51.5014,
-//                                56.0252, 71.7366,
-//                                41.5493, 92.3655,
-//                                70.7299, 92.2041};
-//     float _tmp[10] = {obj.landmark[0].x, obj.landmark[0].y,
-//                       obj.landmark[1].x, obj.landmark[1].y,
-//                       obj.landmark[2].x, obj.landmark[2].y,
-//                       obj.landmark[3].x, obj.landmark[3].y,
-//                       obj.landmark[4].x, obj.landmark[4].y};
-//     float _m[6], _m_inv[6];
-//     get_affine_transform(_tmp, target, 5, _m);
-//     invert_affine_transform(_m, _m_inv);
-
-//     float mat3x3[3][3] = {
-//         {_m_inv[0], _m_inv[1], _m_inv[2]},
-//         {_m_inv[3], _m_inv[4], _m_inv[5]},
-//         {0, 0, 1}};
-//     // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-//     npu_image_face_align.eDtype = npu_image->eDtype;
-//     if (npu_image_face_align.eDtype == AX_NPU_CV_FDT_RGB || npu_image_face_align.eDtype == AX_NPU_CV_FDT_BGR)
-//     {
-//         npu_image_face_align.nSize = 112 * 112 * 3;
-//     }
-//     else if (npu_image_face_align.eDtype == AX_NPU_CV_FDT_NV12 || npu_image_face_align.eDtype == AX_NPU_CV_FDT_NV21)
-//     {
-//         npu_image_face_align.nSize = 112 * 112 * 1.5;
-//     }
-//     else
-//     {
-//         ALOGE("just only support BGR/RGB/NV12 format");
-//     }
-//     int ret = AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, npu_image, &npu_image_face_align, &mat3x3[0][0], AX_NPU_CV_BILINEAR, 128);
-// }
-
 void ax_model_face_feat_extactor_sub::_normalize(float *feature, int feature_len)
 {
     float sum = 0;
@@ -320,7 +292,7 @@ void ax_model_face_feat_extactor_sub::_normalize(float *feature, int feature_len
         feature[it] /= sum;
 }
 
-int ax_model_face_feat_extactor_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_face_feat_extactor_sub::preprocess(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (!dstFrame.pVir)
     {
@@ -333,7 +305,7 @@ int ax_model_face_feat_extactor_sub::preprocess(axdl_image_t *pstFrame, ax_runne
     return 0;
 }
 
-int ax_model_face_feat_extactor_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_face_feat_extactor_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer_FaceFeat.size() == 0)
     {
@@ -349,7 +321,7 @@ int ax_model_face_feat_extactor_sub::post_process(axdl_image_t *pstFrame, ax_run
     return 0;
 }
 
-int ax_model_license_plate_recognition_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_license_plate_recognition_sub::preprocess(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (!dstFrame.pVir)
     {
@@ -404,7 +376,7 @@ int ax_model_license_plate_recognition_sub::preprocess(axdl_image_t *pstFrame, a
     return 0;
 }
 
-int ax_model_license_plate_recognition_sub::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_license_plate_recognition_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     static const std::vector<std::string> plate_string = {
         // "#", "京", "沪", "津", "渝", "冀", "晋", "蒙", "辽", "吉", "黑", "苏", "浙", "皖",

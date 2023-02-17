@@ -14,27 +14,28 @@ protected:
 class ax_model_pose_hrnet_sub : public ax_model_ml_sub
 {
 protected:
-    int preprocess(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
-    int post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    bool use_warp_preprocess = false; // 当crop resize不行时使用
+    int preprocess(axdl_image_t *srcFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
+    int post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 
 class ax_model_pose_axppl_sub : public ax_model_pose_hrnet_sub
 {
 protected:
-    int post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 
 class ax_model_pose_hrnet_animal_sub : public ax_model_pose_hrnet_sub
 {
 protected:
-    int post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 
 class ax_model_pose_hand_sub : public ax_model_ml_sub
 {
 protected:
-    int preprocess(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
-    int post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int preprocess(axdl_image_t *srcFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
+    int post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 
 class ax_model_face_feat_extactor_sub : public ax_model_ml_sub
@@ -42,8 +43,8 @@ class ax_model_face_feat_extactor_sub : public ax_model_ml_sub
 protected:
     SimpleRingBuffer<std::vector<float>> mSimpleRingBuffer_FaceFeat;
     void _normalize(float *feature, int feature_len);
-    int preprocess(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
-    int post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int preprocess(axdl_image_t *srcFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
+    int post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 
 class ax_model_license_plate_recognition_sub : public ax_model_ml_sub
@@ -51,6 +52,6 @@ class ax_model_license_plate_recognition_sub : public ax_model_ml_sub
 protected:
     float argmax_data[21];
     float argmax_idx[21];
-    int preprocess(axdl_image_t *srcFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
-    int post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int preprocess(axdl_image_t *srcFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
+    int post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };

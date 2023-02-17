@@ -31,6 +31,15 @@
 #include "sample_log.h"
 #include <vector>
 
+#ifndef MIN
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
+#endif
+
+
 typedef struct
 {
     AX_JOINT_HANDLE joint_handle;
@@ -125,6 +134,11 @@ int npu_crop_resize(const AX_NPU_CV_Image *input_image, AX_NPU_CV_Image *output_
 
     if (box)
     {
+        box->fX = MAX((int)box->fX, 0);
+        box->fY = MAX((int)box->fY, 0);
+
+        box->fW = MIN((int)box->fW, (int)input_image->nWidth - (int)box->fX);
+        box->fH = MIN((int)box->fH, (int)input_image->nHeight - (int)box->fY);
         box->fW = int(box->fW) - int(box->fW) % 2;
         box->fH = int(box->fH) - int(box->fH) % 2;
     }

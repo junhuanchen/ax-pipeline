@@ -6,11 +6,6 @@
 
 typedef struct
 {
-    float fX, fY, fW, fH;
-} ax_runner_box_t;
-
-typedef struct
-{
     std::string sName;
     unsigned int nIdx;
     std::vector<unsigned int> vShape;
@@ -38,7 +33,7 @@ public:
     virtual int get_algo_height() = 0;
     virtual axdl_color_space_e get_color_space() = 0;
 
-    virtual int inference(axdl_image_t *pstFrame, const ax_runner_box_t *crop_resize_box) = 0;
+    virtual int inference(axdl_image_t *pstFrame, const axdl_bbox_t *crop_resize_box) = 0;
 };
 
 class ax_runner_ax620 : public ax_runner_base
@@ -55,5 +50,5 @@ public:
     int get_algo_height() override;
     axdl_color_space_e get_color_space() override;
 
-    int inference(axdl_image_t *pstFrame, const ax_runner_box_t *crop_resize_box) override;
+    int inference(axdl_image_t *pstFrame, const axdl_bbox_t *crop_resize_box) override;
 };

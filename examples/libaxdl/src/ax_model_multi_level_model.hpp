@@ -8,7 +8,7 @@ protected:
     void draw_custom(cv::Mat &image, axdl_results_t *results, float fontscale, int thickness, int offset_x, int offset_y) override;
 
 public:
-    int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 REGISTER(MT_MLM_HUMAN_POSE_AXPPL, ax_model_human_pose_axppl)
 
@@ -33,7 +33,7 @@ protected:
 
 public:
     void deinit() override;
-    int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 REGISTER(MT_MLM_HAND_POSE, ax_model_hand_pose)
 
@@ -52,13 +52,13 @@ protected:
     }
 
 public:
-    int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 REGISTER(MT_MLM_FACE_RECOGNITION, ax_model_face_recognition)
 
 class ax_model_vehicle_license_recognition : public ax_model_multi_base_t
 {
 public:
-    int inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results) override;
+    int inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results) override;
 };
 REGISTER(MT_MLM_VEHICLE_LICENSE_RECOGNITION, ax_model_vehicle_license_recognition)

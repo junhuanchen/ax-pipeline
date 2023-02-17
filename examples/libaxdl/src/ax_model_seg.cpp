@@ -1,7 +1,7 @@
 #include "ax_model_seg.hpp"
 #include "opencv2/opencv.hpp"
 
-int ax_model_pphumseg::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_pphumseg::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     results->bPPHumSeg = 1;
     auto ptr = (float *)m_runner->get_output(0).pVirAddr;

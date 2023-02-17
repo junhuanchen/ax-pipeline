@@ -89,7 +89,7 @@ void ax_model_human_pose_axppl::draw_custom(cv::Mat &image, axdl_results_t *resu
     }
 }
 
-int ax_model_human_pose_axppl::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_human_pose_axppl::inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     int ret = model_0->inference(pstFrame, crop_resize_box, results);
     if (ret)
@@ -191,7 +191,7 @@ void ax_model_hand_pose::deinit()
     ax_sys_memfree(pstFrame_RGB.pPhy, pstFrame_RGB.pVir);
 }
 
-int ax_model_hand_pose::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_hand_pose::inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (!pstFrame_RGB.pVir)
     {
@@ -217,7 +217,7 @@ int ax_model_hand_pose::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_
     return 0;
 }
 
-int ax_model_face_recognition::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_face_recognition::inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (!b_face_database_init)
     {
@@ -320,7 +320,7 @@ int ax_model_face_recognition::inference(axdl_image_t *pstFrame, ax_runner_box_t
     return 0;
 }
 
-int ax_model_vehicle_license_recognition::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_vehicle_license_recognition::inference(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     int ret = model_0->inference(pstFrame, crop_resize_box, results);
     if (ret)

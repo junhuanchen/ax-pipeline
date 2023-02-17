@@ -5,7 +5,7 @@
 
 #define ANCHOR_SIZE_PER_STRIDE 6
 
-int ax_model_yolov5::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov5::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -55,7 +55,7 @@ int ax_model_yolov5::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_
     return 0;
 }
 
-int ax_model_yolov5_seg::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov5_seg::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -155,7 +155,7 @@ void ax_model_yolov5_seg::draw_custom(cv::Mat &image, axdl_results_t *results, f
     }
 }
 
-int ax_model_yolov5_face::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov5_face::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -233,7 +233,7 @@ void ax_model_yolov5_face::draw_custom(cv::Mat &image, axdl_results_t *results, 
     }
 }
 
-int ax_model_yolov5_lisence_plate::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov5_lisence_plate::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -325,7 +325,7 @@ int ax_model_yolov5_lisence_plate::post_process(axdl_image_t *pstFrame, ax_runne
     return 0;
 }
 
-int ax_model_yolov6::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov6::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -369,7 +369,7 @@ int ax_model_yolov6::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_
     return 0;
 }
 
-int ax_model_yolov7::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov7::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -419,7 +419,7 @@ int ax_model_yolov7::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_
     return 0;
 }
 
-int ax_model_yolov7_face::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov7_face::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -482,7 +482,7 @@ int ax_model_yolov7_face::post_process(axdl_image_t *pstFrame, ax_runner_box_t *
     return 0;
 }
 
-int ax_model_yolov7_plam_hand::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov7_plam_hand::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::PalmObject> proposals;
     std::vector<detection::PalmObject> objects;
@@ -532,7 +532,7 @@ int ax_model_yolov7_plam_hand::post_process(axdl_image_t *pstFrame, ax_runner_bo
     return 0;
 }
 
-int ax_model_plam_hand::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_plam_hand::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     static const int map_size[2] = {24, 12};
     static const int strides[2] = {8, 16};
@@ -578,7 +578,7 @@ int ax_model_plam_hand::post_process(axdl_image_t *pstFrame, ax_runner_box_t *cr
     return 0;
 }
 
-int ax_model_yolox::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolox::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -622,7 +622,7 @@ int ax_model_yolox::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_r
     return 0;
 }
 
-int ax_model_yoloxppl::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yoloxppl::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -670,7 +670,7 @@ int ax_model_yoloxppl::post_process(axdl_image_t *pstFrame, ax_runner_box_t *cro
     return 0;
 }
 
-int ax_model_yolopv2::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolopv2::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     int nOutputSize = m_runner->get_num_outputs();
     const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
@@ -759,7 +759,7 @@ void ax_model_yolopv2::draw_custom(cv::Mat &image, axdl_results_t *results, floa
     draw_bbox(image, results, fontscale, thickness, offset_x, offset_y);
 }
 
-int ax_model_yolo_fast_body::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolo_fast_body::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     int nOutputSize = m_runner->get_num_outputs();
     const ax_runner_tensor_t *pOutputsInfo = m_runner->get_outputs_ptr();
@@ -868,7 +868,7 @@ int ax_model_yolo_fast_body::post_process(axdl_image_t *pstFrame, ax_runner_box_
     return 0;
 }
 
-int ax_model_nanodet::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_nanodet::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -915,7 +915,7 @@ int ax_model_nanodet::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop
     return 0;
 }
 
-int ax_model_scrfd::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_scrfd::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     if (mSimpleRingBuffer.size() == 0)
     {
@@ -986,7 +986,7 @@ int ax_model_scrfd::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_r
     return 0;
 }
 
-int ax_model_yolov8::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov8::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;
@@ -1034,7 +1034,7 @@ int ax_model_yolov8::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_
     return 0;
 }
 
-int ax_model_yolov8_seg::post_process(axdl_image_t *pstFrame, ax_runner_box_t *crop_resize_box, axdl_results_t *results)
+int ax_model_yolov8_seg::post_process(axdl_image_t *pstFrame, axdl_bbox_t *crop_resize_box, axdl_results_t *results)
 {
     std::vector<detection::Object> proposals;
     std::vector<detection::Object> objects;

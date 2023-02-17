@@ -38,15 +38,7 @@ int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, axdl_bbox_t *cro
             bMalloc = true;
         }
 
-        if (!use_warp_preprocess)
-        {
-            ret = ax_imgproc_crop_resize(pstFrame, &dstFrame, &HumObj.bbox);
-            if (ret != 0)
-            {
-                return ret;
-            }
-        }
-        else
+        if (use_warp_preprocess)
         {
             cv::Point2f src_pts[4];
 
@@ -87,6 +79,10 @@ int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, axdl_bbox_t *cro
             // //这里要用AX_NPU_MODEL_TYPE_1_1_2
             ret = ax_imgproc_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
         }
+        else
+        {
+            ret = ax_imgproc_crop_resize(pstFrame, &dstFrame, &HumObj.bbox);
+        }
 
         if (ret != 0)
         {
@@ -112,20 +108,31 @@ int ax_model_pose_hrnet_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *c
     std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
-    for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
+    if (use_warp_preprocess)
     {
-        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
-        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
-        /*
-        [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
-        [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
-        [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
-        */
-        // int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
-        // int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+        for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
+        {
+            results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
+            results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+            /*
+            [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
+            [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
+            [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
+            */
+            int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+            int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
 
-        // results->mObjects[cur_idx].landmark[i].x = x;
-        // results->mObjects[cur_idx].landmark[i].y = y;
+            results->mObjects[cur_idx].landmark[i].x = x;
+            results->mObjects[cur_idx].landmark[i].y = y;
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
+        {
+            results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
+            results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
+        }
     }
     return 0;
 }
@@ -145,21 +152,33 @@ int ax_model_pose_axppl_sub::post_process(axdl_image_t *pstFrame, axdl_bbox_t *c
     std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
-    for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
+    if (use_warp_preprocess)
     {
-        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
-        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
-        /*
-        [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
-        [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
-        [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
-        */
-        // int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
-        // int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+        for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
+        {
+            results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
+            results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+            /*
+            [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
+            [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
+            [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
+            */
+            int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+            int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
 
-        // results->mObjects[cur_idx].landmark[i].x = x;
-        // results->mObjects[cur_idx].landmark[i].y = y;
+            results->mObjects[cur_idx].landmark[i].x = x;
+            results->mObjects[cur_idx].landmark[i].y = y;
+        }
     }
+    else
+    {
+        for (size_t i = 0; i < SAMPLE_BODY_LMK_SIZE; i++)
+        {
+            results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
+            results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
+        }
+    }
+
     return 0;
 }
 
@@ -177,20 +196,31 @@ int ax_model_pose_hrnet_animal_sub::post_process(axdl_image_t *pstFrame, axdl_bb
     std::vector<axdl_point_t> &points = mSimpleRingBuffer.next();
     points.resize(results->mObjects[cur_idx].nLandmark);
     results->mObjects[cur_idx].landmark = points.data();
-    for (size_t i = 0; i < SAMPLE_ANIMAL_LMK_SIZE; i++)
+    if (use_warp_preprocess)
     {
-        results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
-        results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
-        /*
-        [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
-        [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
-        [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
-        */
-        // int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
-        // int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
+        for (size_t i = 0; i < SAMPLE_ANIMAL_LMK_SIZE; i++)
+        {
+            results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x;
+            results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y;
+            /*
+            [x`]   [m00,m01,m02]   [x]   [m00*x + m01*y + m02]
+            [y`] = [m10,m11,m12] * [y] = [m10*x + m11*y + m12]
+            [1 ]   [0  ,0  ,1  ]   [1]   [          1        ]
+            */
+            int x = affine_trans_mat_inv.at<double>(0, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(0, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(0, 2);
+            int y = affine_trans_mat_inv.at<double>(1, 0) * results->mObjects[cur_idx].landmark[i].x + affine_trans_mat_inv.at<double>(1, 1) * results->mObjects[cur_idx].landmark[i].y + affine_trans_mat_inv.at<double>(1, 2);
 
-        // results->mObjects[cur_idx].landmark[i].x = x;
-        // results->mObjects[cur_idx].landmark[i].y = y;
+            results->mObjects[cur_idx].landmark[i].x = x;
+            results->mObjects[cur_idx].landmark[i].y = y;
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < SAMPLE_ANIMAL_LMK_SIZE; i++)
+        {
+            results->mObjects[cur_idx].landmark[i].x = ai_point_result.keypoints[i].x / get_algo_width() * HumObj.bbox.w + HumObj.bbox.x;
+            results->mObjects[cur_idx].landmark[i].y = ai_point_result.keypoints[i].y / get_algo_height() * HumObj.bbox.h + HumObj.bbox.y;
+        }
     }
     return 0;
 }

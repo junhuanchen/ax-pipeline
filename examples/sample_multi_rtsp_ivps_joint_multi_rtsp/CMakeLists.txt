@@ -34,7 +34,7 @@ function(targetlink name)
     # rtsp
     target_include_directories(${name} PRIVATE ../rtsp/inc)
 
-    target_include_directories(${name} PRIVATE ../sample_rtsp_ivps_joint_vo/RTSP/include)
+    target_include_directories(${name} PRIVATE ${CMAKE_SOURCE_DIR}/third-party/RTSP/include)
     target_link_libraries(${name} PRIVATE rtspclisvr)
 endfunction()
 

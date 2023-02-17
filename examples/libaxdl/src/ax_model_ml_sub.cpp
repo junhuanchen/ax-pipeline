@@ -75,7 +75,7 @@ int ax_model_pose_hrnet_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t 
             {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
             {0, 0, 1}};
         // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-        ret = ax_npu_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
+        ret = ax_imgproc_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
         if (ret != 0)
         {
             return ret;
@@ -229,7 +229,7 @@ int ax_model_pose_hand_sub::preprocess(axdl_image_t *pstFrame, ax_runner_box_t *
         {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
         {0, 0, 1}};
     // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-    int ret = ax_npu_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
+    int ret = ax_imgproc_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
     if (ret)
         return ret;
     return 0;
@@ -329,7 +329,7 @@ int ax_model_face_feat_extactor_sub::preprocess(axdl_image_t *pstFrame, ax_runne
         bMalloc = true;
     }
     axdl_object_t &obj = results->mObjects[cur_idx];
-    ax_align_face(&obj, pstFrame, &dstFrame);
+    ax_imgproc_align_face(&obj, pstFrame, &dstFrame);
     return 0;
 }
 
@@ -396,7 +396,7 @@ int ax_model_license_plate_recognition_sub::preprocess(axdl_image_t *pstFrame, a
         {(float)affine_trans_mat_inv.at<double>(1, 0), (float)affine_trans_mat_inv.at<double>(1, 1), (float)affine_trans_mat_inv.at<double>(1, 2)},
         {0, 0, 1}};
     // //这里要用AX_NPU_MODEL_TYPE_1_1_2
-    int ret = ax_npu_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
+    int ret = ax_imgproc_warp(pstFrame, &dstFrame, &mat3x3[0][0], 128);
     if (ret != 0)
     {
         return ret;

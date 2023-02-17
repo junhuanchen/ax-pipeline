@@ -9,6 +9,14 @@
 #include "npu_cv_kit/ax_npu_imgproc.h"
 #include "ax_sys_api.h"
 
+#ifndef MIN
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
+#endif
+
 int ax_sys_memalloc(unsigned long long int *phyaddr, void **pviraddr, unsigned int size, unsigned int align, const char *token)
 {
     return AX_SYS_MemAlloc(phyaddr, pviraddr, size, align, (const AX_S8 *)token);
@@ -48,7 +56,7 @@ void cvt(axdl_image_t *src, AX_NPU_CV_Image *dst)
     }
 }
 
-int ax_npu_csc(axdl_image_t *src, axdl_image_t *dst)
+int ax_imgproc_csc(axdl_image_t *src, axdl_image_t *dst)
 {
     AX_NPU_CV_Image npu_src, npu_dst;
     cvt(src, &npu_src);
@@ -56,7 +64,7 @@ int ax_npu_csc(axdl_image_t *src, axdl_image_t *dst)
     return AX_NPU_CV_CSC(AX_NPU_MODEL_TYPE_1_1_1, &npu_src, &npu_dst);
 }
 
-int ax_npu_warp(axdl_image_t *src, axdl_image_t *dst, const float *pMat33, const int const_val)
+int ax_imgproc_warp(axdl_image_t *src, axdl_image_t *dst, const float *pMat33, const int const_val)
 {
     AX_NPU_CV_Image npu_src, npu_dst;
     cvt(src, &npu_src);
@@ -64,7 +72,48 @@ int ax_npu_warp(axdl_image_t *src, axdl_image_t *dst, const float *pMat33, const
     return AX_NPU_CV_Warp(AX_NPU_MODEL_TYPE_1_1_2, &npu_src, &npu_dst, pMat33, AX_NPU_CV_BILINEAR, const_val);
 }
 
-int ax_align_face(axdl_object_t *obj, axdl_image_t *src, axdl_image_t *dst)
+int _ax_imgproc_crop_resize(axdl_image_t *src, axdl_image_t *dst, axdl_bbox_t *box, AX_NPU_CV_ImageResizeAlignParam horizontal, AX_NPU_CV_ImageResizeAlignParam vertical)
+{
+    AX_NPU_CV_Image npu_src, npu_dst;
+    cvt(src, &npu_src);
+    cvt(dst, &npu_dst);
+
+    AX_NPU_CV_Color color;
+    color.nYUVColorValue[0] = 128;
+    color.nYUVColorValue[1] = 128;
+    AX_NPU_SDK_EX_MODEL_TYPE_T virtual_npu_mode_type = AX_NPU_MODEL_TYPE_1_1_1;
+
+    if (box)
+    {
+        box->x = MAX(box->x, 0);
+        box->x = MAX(box->x, 0);
+
+        box->w = MIN(box->w, src->nWidth - box->x);
+        box->h = MIN(box->h, src->nHeight - box->y);
+
+        box->w = int(box->w) - int(box->w) % 2;
+        box->h = int(box->h) - int(box->h) % 2;
+    }
+
+    AX_NPU_CV_Box *ppBox[1];
+    ppBox[0] = (AX_NPU_CV_Box *)box;
+
+    AX_NPU_CV_Image *p_npu_dst = &npu_dst;
+
+    return AX_NPU_CV_CropResizeImage(virtual_npu_mode_type, &npu_src, 1, &p_npu_dst, ppBox, horizontal, vertical, color);
+}
+
+int ax_imgproc_crop_resize(axdl_image_t *src, axdl_image_t *dst, axdl_bbox_t *box)
+{
+    return _ax_imgproc_crop_resize(src, dst, box, AX_NPU_CV_IMAGE_FORCE_RESIZE, AX_NPU_CV_IMAGE_FORCE_RESIZE);
+}
+
+int ax_imgproc_crop_resize_keep_ratio(axdl_image_t *src, axdl_image_t *dst, axdl_bbox_t *box)
+{
+    return _ax_imgproc_crop_resize(src, dst, box, AX_NPU_CV_IMAGE_HORIZONTAL_CENTER, AX_NPU_CV_IMAGE_VERTICAL_CENTER);
+}
+
+int ax_imgproc_align_face(axdl_object_t *obj, axdl_image_t *src, axdl_image_t *dst)
 {
     static float target[10] = {38.2946, 51.6963,
                                73.5318, 51.5014,
@@ -97,5 +146,5 @@ int ax_align_face(axdl_object_t *obj, axdl_image_t *src, axdl_image_t *dst)
     {
         ALOGE("just only support BGR/RGB/NV12 format");
     }
-    return ax_npu_warp(src, dst, &mat3x3[0][0], 128);
+    return ax_imgproc_warp(src, dst, &mat3x3[0][0], 128);
 }

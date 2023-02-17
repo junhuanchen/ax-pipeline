@@ -18,9 +18,11 @@ extern "C"
 extern "C"
 {
 #endif
-    int ax_npu_csc(axdl_image_t *src, axdl_image_t *dst);
-    int ax_npu_warp(axdl_image_t *src, axdl_image_t *dst, const float *pMat33, const int const_val);
-    int ax_align_face(axdl_object_t *obj, axdl_image_t *src, axdl_image_t *dst);
+    int ax_imgproc_csc(axdl_image_t *src, axdl_image_t *dst);
+    int ax_imgproc_warp(axdl_image_t *src, axdl_image_t *dst, const float *pMat33, const int const_val);
+    int ax_imgproc_crop_resize(axdl_image_t *src, axdl_image_t *dst, axdl_bbox_t *box);
+    int ax_imgproc_crop_resize_keep_ratio(axdl_image_t *src, axdl_image_t *dst, axdl_bbox_t *box);
+    int ax_imgproc_align_face(axdl_object_t *obj, axdl_image_t *src, axdl_image_t *dst);
 #ifdef __cplusplus
 }
 #endif

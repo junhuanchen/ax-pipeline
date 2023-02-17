@@ -200,7 +200,7 @@ int ax_model_hand_pose::inference(axdl_image_t *pstFrame, ax_runner_box_t *crop_
         ax_sys_memalloc(&pstFrame_RGB.pPhy, (void **)&pstFrame_RGB.pVir, pstFrame_RGB.nSize, 0x100, NULL);
     }
     pstFrame_RGB.eDtype = axdl_color_space_bgr;
-    ax_npu_csc(pstFrame, &pstFrame_RGB);
+    ax_imgproc_csc(pstFrame, &pstFrame_RGB);
     pstFrame_RGB.eDtype = axdl_color_space_rgb;
 
     int ret = model_0->inference(&pstFrame_RGB, crop_resize_box, results);

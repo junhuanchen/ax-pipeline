@@ -36,7 +36,7 @@ rtsp_session_handle get_rtsp_session_handle(int pipeid);
 void *_venc_get_frame_thread(void *arg)
 {
     pipeline_t *pipe = (pipeline_t *)arg;
-    AX_S16 syncType = -1;
+    AX_S16 nMilliSec = 200;
     AX_VENC_STREAM_S stStream;
     AX_VENC_RECV_PIC_PARAM_S stRecvParam;
     int s32Ret = AX_VENC_StartRecvFrame(pipe->m_venc_attr.n_venc_chn, &stRecvParam);
@@ -48,7 +48,7 @@ void *_venc_get_frame_thread(void *arg)
 
     while (!pipe->n_loog_exit)
     {
-        s32Ret = AX_VENC_GetStream(pipe->m_venc_attr.n_venc_chn, &stStream, syncType);
+        s32Ret = AX_VENC_GetStream(pipe->m_venc_attr.n_venc_chn, &stStream, nMilliSec);
         // printf("%d\n",stStream.stPack.u32Len);
         if (AX_SUCCESS == s32Ret)
         {

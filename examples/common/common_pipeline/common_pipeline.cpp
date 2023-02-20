@@ -438,6 +438,85 @@ int destory_pipeline(pipeline_t *pipe)
     // usleep(200 * 1000);
     erase(pipeline_handle.pipeid_pipe, pipe->pipeid);
 
+    switch (pipe->m_output_type)
+    {
+    case po_venc_mjpg:
+    case po_venc_h264:
+    case po_venc_h265:
+    case po_rtsp_h264:
+    case po_rtsp_h265:
+    {
+        AX_MOD_INFO_S srcMod, dstMod;
+        srcMod.enModId = AX_ID_IVPS;
+        srcMod.s32GrpId = pipe->m_ivps_attr.n_ivps_grp;
+        srcMod.s32ChnId = 0;
+
+        dstMod.enModId = AX_ID_VENC;
+        dstMod.s32GrpId = 0;
+        dstMod.s32ChnId = pipe->m_venc_attr.n_venc_chn;
+        AX_SYS_UnLink(&srcMod, &dstMod);
+
+        if (contain(pipeline_handle.venc_chn, pipe->m_venc_attr.n_venc_chn))
+        {
+            _destore_venc_grp(pipe);
+            erase(pipeline_handle.venc_chn, pipe->m_venc_attr.n_venc_chn);
+        }
+
+        if (pipeline_handle.venc_chn.size() == 0)
+        {
+            ALOGN("AX_VENC_Deinit");
+            AX_VENC_Deinit();
+        }
+
+        if (pipe->m_output_type == po_rtsp_h264 || pipe->m_output_type == po_rtsp_h265)
+        {
+            std::string end_point = pipe->m_venc_attr.end_point;
+            if (end_point.length())
+            {
+                if (end_point[0] != '/')
+                {
+                    end_point = "/" + end_point;
+                }
+            }
+            if (contain(pipeline_handle.rtsp_pipeid_sessiones, pipe->pipeid))
+            {
+                rtsp_del_session(pipeline_handle.rtsp_pipeid_sessiones[pipe->pipeid]);
+                erase(pipeline_handle.rtsp_pipeid_sessiones, pipe->pipeid);
+            }
+            if (contain(pipeline_handle.rtsp_end_point, end_point))
+                erase(pipeline_handle.rtsp_end_point, end_point);
+
+            if (pipeline_handle.rtsp_pipeid_sessiones.size() == 0)
+            {
+                rtsp_del_demo(pipeline_handle.rDemoHandle);
+                pipeline_handle.rDemoHandle = NULL;
+                ALOGN("rtsp server release");
+            }
+        }
+    }
+
+    break;
+    case po_vo_sipeed_maix3_screen:
+    {
+        AX_MOD_INFO_S srcMod, dstMod;
+        srcMod.enModId = AX_ID_IVPS;
+        srcMod.s32GrpId = pipe->m_ivps_attr.n_ivps_grp;
+        srcMod.s32ChnId = 0;
+        dstMod.enModId = AX_ID_VO;
+        dstMod.s32GrpId = 0;
+        dstMod.s32ChnId = 0;
+        AX_SYS_UnLink(&srcMod, &dstMod);
+        if (pipeline_handle.b_maix3_init)
+        {
+            _destory_vo();
+            pipeline_handle.b_maix3_init = false;
+        }
+    }
+    break;
+    default:
+        break;
+    }
+
     switch (pipe->m_input_type)
     {
     case pi_user:
@@ -519,85 +598,7 @@ int destory_pipeline(pipeline_t *pipe)
     default:
         break;
     }
-
-    switch (pipe->m_output_type)
-    {
-    case po_venc_mjpg:
-    case po_venc_h264:
-    case po_venc_h265:
-    case po_rtsp_h264:
-    case po_rtsp_h265:
-    {
-        AX_MOD_INFO_S srcMod, dstMod;
-        srcMod.enModId = AX_ID_IVPS;
-        srcMod.s32GrpId = pipe->m_ivps_attr.n_ivps_grp;
-        srcMod.s32ChnId = 0;
-
-        dstMod.enModId = AX_ID_VENC;
-        dstMod.s32GrpId = 0;
-        dstMod.s32ChnId = pipe->m_venc_attr.n_venc_chn;
-        AX_SYS_UnLink(&srcMod, &dstMod);
-
-        if (contain(pipeline_handle.venc_chn, pipe->m_venc_attr.n_venc_chn))
-        {
-            _destore_venc_grp(pipe);
-            erase(pipeline_handle.venc_chn, pipe->m_venc_attr.n_venc_chn);
-        }
-
-        if (pipeline_handle.venc_chn.size() == 0)
-        {
-            ALOGN("AX_VENC_Deinit");
-            AX_VENC_Deinit();
-        }
-
-        if (pipe->m_output_type == po_rtsp_h264 || pipe->m_output_type == po_rtsp_h265)
-        {
-            std::string end_point = pipe->m_venc_attr.end_point;
-            if (end_point.length())
-            {
-                if (end_point[0] != '/')
-                {
-                    end_point = "/" + end_point;
-                }
-            }
-            if (contain(pipeline_handle.rtsp_pipeid_sessiones, pipe->pipeid))
-            {
-                rtsp_del_session(pipeline_handle.rtsp_pipeid_sessiones[pipe->pipeid]);
-                erase(pipeline_handle.rtsp_pipeid_sessiones, pipe->pipeid);
-            }
-            if (contain(pipeline_handle.rtsp_end_point, end_point))
-                erase(pipeline_handle.rtsp_end_point, end_point);
-
-            if (pipeline_handle.rtsp_pipeid_sessiones.size() == 0)
-            {
-                rtsp_del_demo(pipeline_handle.rDemoHandle);
-                pipeline_handle.rDemoHandle = NULL;
-                ALOGN("rtsp server release");
-            }
-        }
-    }
-
-    break;
-    case po_vo_sipeed_maix3_screen:
-    {
-        AX_MOD_INFO_S srcMod, dstMod;
-        srcMod.enModId = AX_ID_IVPS;
-        srcMod.s32GrpId = pipe->m_ivps_attr.n_ivps_grp;
-        srcMod.s32ChnId = 0;
-        dstMod.enModId = AX_ID_VO;
-        dstMod.s32GrpId = 0;
-        dstMod.s32ChnId = 0;
-        AX_SYS_UnLink(&srcMod, &dstMod);
-        if (pipeline_handle.b_maix3_init)
-        {
-            _destory_vo();
-            pipeline_handle.b_maix3_init = false;
-        }
-    }
-    break;
-    default:
-        break;
-    }
+    
     return 0;
 }
 

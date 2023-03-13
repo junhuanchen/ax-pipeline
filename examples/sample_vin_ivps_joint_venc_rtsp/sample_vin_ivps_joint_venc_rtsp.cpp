@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
         pipe0.enable = 1;
         pipe0.pipeid = 0x90015;
         pipe0.m_input_type = pi_vin;
-        pipe0.m_output_type = po_rtsp_h265; // 可以创建265，降低带宽压力
+        pipe0.m_output_type = po_rtsp_h264; // 可以创建265，降低带宽压力
         pipe0.n_loog_exit = 0;              // 可以用来控制线程退出（如果有的话）
         pipe0.n_vin_pipe = 0;
         pipe0.n_vin_chn = 0;

@@ -40,7 +40,7 @@ message(STATUS "BSP_MSP_DIR = ${BSP_MSP_DIR}")
 option(SIPY_BUILD "build *.so for sipeed python package" OFF)
 if (SIPY_BUILD)
     set(SIPY_SOVERSION 1)
-    set(SIPY_VERSION ${SIPY_SOVERSION}.1.0)
+    set(SIPY_VERSION ${SIPY_SOVERSION}.1.2)
 endif()
 
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O1 -Wall -s -fPIC -march=armv7-a -mfloat-abi=hard -mfpu=neon")
